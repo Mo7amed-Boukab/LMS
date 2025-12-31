@@ -1,0 +1,32 @@
+services:
+  nest-app:
+    container_name: nest-js-app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: nest-api
+    ports:
+      - "3000:3000"
+    networks:
+      - nestjs-network
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/user/src/app
+      - /user/src/app/node_modules
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./database:/data/db
+    ports:
+      - 27017:27017
+    networks:
+      - nestjs-network
+    restart: always
+
+networks:
+  nestjs-network:
+    driver: bridge
