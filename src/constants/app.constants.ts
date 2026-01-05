@@ -1,2 +1,3 @@
-export const DATABASE_CONNECTION =
-  'mongodb+srv://wassimelmorabit7_db_user:MhQGIYbdIg1Z6hqL@lms-cluster-0.ytvgxjn.mongodb.net/?appName=LMS-CLUSTER-0';
+export const DATABASE_CONNECTION = 'DATABASE_CONNECTION';
+export const MONGODB_URI =
+  process.env.MONGO_URI || 'mongodb://localhost:27017/lms';
