@@ -18,8 +18,8 @@ export class CreateCourseModuleDto {
 
     @IsNumber()
     @Min(0)
-    @IsNotEmpty()
-    order: number;
+    @IsOptional()
+    order?: number;
 
     @IsEnum(ModuleContentType)
     @IsNotEmpty()
