@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from '@nestjs/common';
 import { CourseModulesService } from './course-modules.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
@@ -9,8 +9,8 @@ export class CourseModulesController {
   constructor(private readonly courseModulesService: CourseModulesService) { }
 
   @Post()
-  create(@Body() createDto: CreateCourseModuleDto) {
-    return this.courseModulesService.create(createDto);
+  create(@Body() createDto: CreateCourseModuleDto, @Req() req: any) {
+    return this.courseModulesService.create(createDto, req.user?._id);
   }
 
   @Get('course/:courseId')
@@ -26,12 +26,12 @@ export class CourseModulesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDto: UpdateCourseModuleDto) {
-    return this.courseModulesService.update(id, updateDto);
+  update(@Param('id') id: string, @Body() updateDto: UpdateCourseModuleDto, @Req() req: any) {
+    return this.courseModulesService.update(id, updateDto, req.user?._id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.courseModulesService.remove(id);
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.courseModulesService.remove(id, req.user?._id);
   }
 }
