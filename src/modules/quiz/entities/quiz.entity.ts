@@ -46,7 +46,8 @@ export class Quiz extends Document {
 
   @Prop({ type: [QuestionSchema], default: [] })
   questions: Question[];
-
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);
+
+QuizSchema.index({ title: 1, moduleId: 1 }, { unique: true });
