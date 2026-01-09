@@ -4,6 +4,8 @@ import { Document, Types } from 'mongoose';
 // schema du options
 @Schema({ _id: true })
 export class Option {
+  _id: Types.ObjectId;
+
   @Prop({ required: true })
   text: string;
 
@@ -21,6 +23,8 @@ export enum QuestionType {
 
 @Schema({ _id: true })
 export class Question {
+  _id: Types.ObjectId;
+
   @Prop({ required: true })
   text: string;
 

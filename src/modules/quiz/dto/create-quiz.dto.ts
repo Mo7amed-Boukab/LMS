@@ -1,11 +1,13 @@
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsString,
 } from 'class-validator';
+import { QuestionType } from '../entities/quiz.entity';
 
 export class CreateOptionDto {
   @IsNotEmpty()
@@ -24,7 +26,8 @@ export class CreateQuestionDto {
 
   @IsNotEmpty()
   @IsString()
-  type: string;
+  @IsEnum(QuestionType)
+  type: QuestionType;
 
   @IsArray()
   @ArrayMinSize(2)

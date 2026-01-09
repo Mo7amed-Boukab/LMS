@@ -39,7 +39,7 @@ export class QuizService {
     return this.quizModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Quiz> {
+  async findQuizById(id: string): Promise<Quiz> {
     const quiz = await this.quizModel.findById(id).exec();
     if (!quiz) throw new NotFoundException('quiz not found');
     return quiz;
