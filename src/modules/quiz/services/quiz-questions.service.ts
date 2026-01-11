@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Question, Quiz } from '../entities/quiz.entity';
 import { Model, Types } from 'mongoose';
@@ -17,14 +13,8 @@ export class QuizQuestionsService {
     private readonly quizService: QuizService,
   ) {}
 
-  private validateObjectId(id: string) {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException(`ID invalide: ${id}`);
-    }
-  }
-
   async addQuestion(quizId: string, createQuestionDto: CreateQuestionDto) {
-    this.validateObjectId(quizId);
+    this.quizService.validateObjectId(quizId);
 
     const quiz = await this.quizService.findQuizById(quizId);
 
@@ -62,8 +52,8 @@ export class QuizQuestionsService {
   }
 
   async findOneQuestion(quizId: string, questionId: string) {
-    this.validateObjectId(quizId);
-    this.validateObjectId(questionId);
+    this.quizService.validateObjectId(quizId);
+    this.quizService.validateObjectId(questionId);
 
     const quiz = await this.quizService.findQuizById(quizId);
 
@@ -84,6 +74,7 @@ export class QuizQuestionsService {
       options: question.options.map((opt) => ({
         _id: opt._id,
         text: opt.text,
+        isCorrect: opt.isCorrect,
       })),
     };
   }
@@ -93,8 +84,8 @@ export class QuizQuestionsService {
     questionId: string,
     updateQuestionDto: UpdateQuestionDto,
   ) {
-    this.validateObjectId(quizId);
-    this.validateObjectId(questionId);
+    this.quizService.validateObjectId(quizId);
+    this.quizService.validateObjectId(questionId);
 
     const quiz = await this.quizService.findQuizById(quizId);
 
@@ -119,8 +110,8 @@ export class QuizQuestionsService {
   }
 
   async removeQuestion(quizId: string, questionId: string) {
-    this.validateObjectId(quizId);
-    this.validateObjectId(questionId);
+    this.quizService.validateObjectId(quizId);
+    this.quizService.validateObjectId(questionId);
 
     const quiz = await this.quizService.findQuizById(quizId);
 

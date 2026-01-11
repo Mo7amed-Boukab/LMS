@@ -27,7 +27,7 @@ export class QuizController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.quizService.findOne(id);
+    return this.quizService.findQuizById(id);
   }
 
   @Patch(':id')

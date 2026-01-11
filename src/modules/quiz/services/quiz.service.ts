@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -8,7 +9,7 @@ import { CreateQuizDto } from '../dto/create-quiz.dto';
 import { UpdateQuizDto } from '../dto/update-quiz.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Quiz } from '../entities/quiz.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class QuizService {
@@ -56,5 +57,11 @@ export class QuizService {
   async remove(id: string): Promise<void> {
     const result = await this.quizModel.findByIdAndDelete(id);
     if (!result) throw new NotFoundException('quiz not found');
+  }
+
+  validateObjectId(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`ID invalide: ${id}`);
+    }
   }
 }
