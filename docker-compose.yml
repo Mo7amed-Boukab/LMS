@@ -7,6 +7,9 @@ services:
     image: nest-api
     ports:
       - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/lms
+      - PORT=3000
     networks:
       - nestjs-network
     depends_on:
