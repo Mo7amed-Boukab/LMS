@@ -15,7 +15,7 @@ import {
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
 
-import { Course, CourseDocument } from '../courses/schemas/course.schema';
+import { Course, CourseDocument } from 'src/courses/schemas/course.schema';
 
 @Injectable()
 export class CourseModulesService {
@@ -46,7 +46,7 @@ export class CourseModulesService {
       throw new NotFoundException('Course not found');
     }
 
-    if (!course.ownerId.equals(userId)) {
+    if (!course.instructorId.equals(userId)) {
       throw new ForbiddenException('You do not own this course');
     }
 
@@ -125,7 +125,7 @@ export class CourseModulesService {
       throw new NotFoundException('Course not found');
     }
 
-    if (!course.ownerId.equals(userId)) {
+    if (!course.instructorId.equals(userId)) {
       throw new ForbiddenException('You do not own this course');
     }
 
@@ -206,7 +206,7 @@ export class CourseModulesService {
       throw new NotFoundException('Course not found');
     }
 
-    if (!course.ownerId.equals(userId)) {
+    if (!course.instructorId.equals(userId)) {
       throw new ForbiddenException('You do not own this course');
     }
 

@@ -6,6 +6,7 @@ import {
   CourseModule,
   CourseModuleSchema,
 } from './schemas/course-module.schema';
+import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
 
 @Module({
   imports: [
@@ -13,6 +14,10 @@ import {
       {
         name: CourseModule.name,
         schema: CourseModuleSchema,
+      },
+      {
+        name: Course.name,
+        schema: CourseSchema,
       },
     ]),
   ],
