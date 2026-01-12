@@ -1,8 +1,17 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-import { CourseModule, CourseModuleDocument, ModuleContentType } from './schemas/course-module.schema';
+import {
+  CourseModule,
+  CourseModuleDocument,
+  ModuleContentType,
+} from './schemas/course-module.schema';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
 
@@ -16,12 +25,15 @@ export class CourseModulesService {
 
     @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
-  ) { }
+  ) {}
 
   /* -------------------------------------------------------------------------- */
   /*                               CREATE MODULE                                 */
   /* -------------------------------------------------------------------------- */
-  async create(createDto: CreateCourseModuleDto, userId: string): Promise<CourseModule> {
+  async create(
+    createDto: CreateCourseModuleDto,
+    userId: string,
+  ): Promise<CourseModule> {
     if (!Types.ObjectId.isValid(createDto.courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
@@ -40,11 +52,19 @@ export class CourseModulesService {
 
     let order = createDto.order;
     if (order === undefined) {
-      const lastModule = await this.courseModuleModel.findOne({ courseId: new Types.ObjectId(createDto.courseId) }).sort({ order: -1 }).lean().exec();
+      const lastModule = await this.courseModuleModel
+        .findOne({ courseId: new Types.ObjectId(createDto.courseId) })
+        .sort({ order: -1 })
+        .lean()
+        .exec();
       order = lastModule ? lastModule.order + 1 : 1;
     }
 
-    const module = new this.courseModuleModel({ ...createDto, order, courseId: course._id });
+    const module = new this.courseModuleModel({
+      ...createDto,
+      order,
+      courseId: course._id,
+    });
 
     return module.save();
   }
@@ -57,7 +77,11 @@ export class CourseModulesService {
       throw new BadRequestException('Invalid courseId');
     }
 
-    return this.courseModuleModel.find({ courseId: new Types.ObjectId(courseId), isActive: true }).sort({ order: 1 }).lean().exec();
+    return this.courseModuleModel
+      .find({ courseId: new Types.ObjectId(courseId), isActive: true })
+      .sort({ order: 1 })
+      .lean()
+      .exec();
   }
 
   /* -------------------------------------------------------------------------- */
@@ -80,7 +104,11 @@ export class CourseModulesService {
   /* -------------------------------------------------------------------------- */
   /*                               UPDATE MODULE                                  */
   /* -------------------------------------------------------------------------- */
-  async update(id: string, updateDto: UpdateCourseModuleDto, userId: string): Promise<CourseModule> {
+  async update(
+    id: string,
+    updateDto: UpdateCourseModuleDto,
+    userId: string,
+  ): Promise<CourseModule> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid module id');
     }
@@ -121,7 +149,10 @@ export class CourseModulesService {
 
     const bulkOps = moduleIds.map((moduleId, index) => ({
       updateOne: {
-        filter: { _id: new Types.ObjectId(moduleId), courseId: new Types.ObjectId(courseId) },
+        filter: {
+          _id: new Types.ObjectId(moduleId),
+          courseId: new Types.ObjectId(courseId),
+        },
         update: { $set: { order: index + 1 } },
       },
     }));
@@ -135,12 +166,22 @@ export class CourseModulesService {
     if (!metadata) return;
 
     if (type === ModuleContentType.VIDEO) {
-      if (metadata.duration !== undefined && typeof metadata.duration !== 'number') {
-        throw new BadRequestException('Video metadata duration must be a number');
+      if (
+        metadata.duration !== undefined &&
+        typeof metadata.duration !== 'number'
+      ) {
+        throw new BadRequestException(
+          'Video metadata duration must be a number',
+        );
       }
     } else if (type === ModuleContentType.PDF) {
-      if (metadata.pageCount !== undefined && typeof metadata.pageCount !== 'number') {
-        throw new BadRequestException('PDF metadata pageCount must be a number');
+      if (
+        metadata.pageCount !== undefined &&
+        typeof metadata.pageCount !== 'number'
+      ) {
+        throw new BadRequestException(
+          'PDF metadata pageCount must be a number',
+        );
       }
     }
   }

@@ -13,7 +13,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
 
 interface AuthenticatedRequest extends ExpressRequest {
-  user: { userId: string; email: string };
+  user: { userId: string; email: string; role?: string };
 }
 
 @Controller('auth')
