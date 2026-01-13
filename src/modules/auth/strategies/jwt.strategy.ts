@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Role } from 'src/common/enums/role.enum';
 import { UsersService } from 'src/modules/users/user.service';
 
 @Injectable()
@@ -12,8 +13,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: process.env.JWT_SECRET || 'fallback-secret',
     });
   }
-  async validate(payload: any) {
-    if (payload.role) {
+  async validate(payload: { sub: string; role: Role; email: string }) {
+    if (payload?.role) {
       return { userId: payload.sub, email: payload.email, role: payload.role };
     }
 
