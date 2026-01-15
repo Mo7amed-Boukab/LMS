@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { QuestionType } from 'src/common/enums/question-type.enum';
+import { QuizStatus } from 'src/common/enums/quiz-status.enum';
 
 // schema du options
 @Schema({ _id: true })
@@ -9,17 +11,12 @@ export class Option {
   @Prop({ required: true })
   text: string;
 
-  @Prop({ required: true, default: false, select: false })
+  @Prop({ required: true, select: false })
   isCorrect: boolean;
 }
 export const OptionSchema = SchemaFactory.createForClass(Option);
 
 // schema du questions
-export enum QuestionType {
-  QCM = 'QCM',
-  BOOLEAN = 'boolean',
-  MULTIPLE = 'multiple',
-}
 
 @Schema({ _id: true })
 export class Question {
@@ -31,7 +28,7 @@ export class Question {
   @Prop({ enum: QuestionType, default: QuestionType.QCM })
   type: QuestionType;
 
-  @Prop({ type: [OptionSchema], required: true })
+  @Prop({ type: [OptionSchema], default: [] })
   options: Option[];
 }
 export const QuestionSchema = SchemaFactory.createForClass(Question);
@@ -47,6 +44,9 @@ export class Quiz extends Document {
 
   @Prop({ required: true, min: 0, max: 100 })
   passingScore: number;
+
+  @Prop({ enum: QuizStatus, default: QuizStatus.DRAFT })
+  status: QuizStatus;
 
   @Prop({ type: [QuestionSchema], default: [] })
   questions: Question[];

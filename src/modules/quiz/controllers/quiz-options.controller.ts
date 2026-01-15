@@ -12,7 +12,7 @@ import { QuizOptionsService } from '../services/quiz-options.service';
 import { CreateOptionDto } from '../dto/create-quiz.dto';
 import { UpdateOptionDto } from '../dto/update-quiz.dto';
 
-@Controller('quizzes/:quizId/:questionId/options')
+@Controller('quizzes/:quizId/questions/:questionId/options')
 export class QuizOptionsController {
   constructor(private readonly quizOptionsService: QuizOptionsService) {}
 

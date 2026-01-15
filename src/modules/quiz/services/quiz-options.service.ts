@@ -3,19 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { QuizService } from './quiz.service';
 import { Model, Types } from 'mongoose';
 import { CreateOptionDto } from '../dto/create-quiz.dto';
 import { QuizQuestionsService } from './quiz-questions.service';
 import { InjectModel } from '@nestjs/mongoose';
-import { Option, Question, Quiz } from '../entities/quiz.entity';
+import { Option, Question, Quiz } from '../schema/quiz.schema';
 import { UpdateOptionDto } from '../dto/update-quiz.dto';
+import { ObjectIdService } from 'src/common/services/objectId.service';
 
 @Injectable()
 export class QuizOptionsService {
   constructor(
     @InjectModel('Quiz') private readonly quizModel: Model<Quiz>,
-    private readonly quizService: QuizService,
+    private readonly objectIdService: ObjectIdService,
     private readonly quizQuestionsService: QuizQuestionsService,
   ) {}
 
@@ -24,38 +24,38 @@ export class QuizOptionsService {
     questionId: string,
     createOptionDto: CreateOptionDto,
   ) {
-    this.quizService.validateObjectId(quizId);
-    this.quizService.validateObjectId(questionId);
-
-    const quiz = await this.quizService.findQuizById(quizId);
-    const question = await this.quizQuestionsService.findOneQuestion(
-      quizId,
-      questionId,
-    );
+    this.objectIdService.validateObjectId(quizId);
+    this.objectIdService.validateObjectId(questionId);
 
     const newOption: Option = {
       _id: new Types.ObjectId(),
       ...createOptionDto,
     };
 
-    question.options.push(newOption);
-
-    await quiz.save();
-
-    const addedOption = question.options[question.options.length - 1];
+    const result = await this.quizModel.updateOne(
+      {
+        _id: quizId,
+        'questions._id': questionId,
+      },
+      {
+        $push: {
+          'questions.$.options': newOption,
+        },
+      },
+    );
+    if (result.modifiedCount === 0) {
+      throw new NotFoundException('Quiz ou Question introuvable');
+    }
 
     return {
       message: 'Option ajoutée avec succès',
-      option: {
-        _id: addedOption._id,
-        text: addedOption.text,
-      },
+      newOption,
     };
   }
 
   async findAllOptions(quizId: string, questionId: string) {
-    this.quizService.validateObjectId(quizId);
-    this.quizService.validateObjectId(questionId);
+    this.objectIdService.validateObjectId(quizId);
+    this.objectIdService.validateObjectId(questionId);
 
     const question = await this.quizQuestionsService.findOneQuestion(
       quizId,
@@ -70,9 +70,9 @@ export class QuizOptionsService {
   }
 
   async findOneOption(quizId: string, questionId: string, optionId: string) {
-    this.quizService.validateObjectId(quizId);
-    this.quizService.validateObjectId(questionId);
-    this.quizService.validateObjectId(optionId);
+    this.objectIdService.validateObjectId(quizId);
+    this.objectIdService.validateObjectId(questionId);
+    this.objectIdService.validateObjectId(optionId);
 
     const question = await this.quizQuestionsService.findOneQuestion(
       quizId,
@@ -92,68 +92,82 @@ export class QuizOptionsService {
     optionId: string,
     updateOptionDto: UpdateOptionDto,
   ) {
-    this.quizService.validateObjectId(quizId);
-    this.quizService.validateObjectId(questionId);
-    this.quizService.validateObjectId(optionId);
+    this.objectIdService.validateObjectId(quizId);
+    this.objectIdService.validateObjectId(questionId);
+    this.objectIdService.validateObjectId(optionId);
 
-    const quiz = await this.quizService.findQuizById(quizId);
-    const question = await this.quizQuestionsService.findOneQuestion(
-      quizId,
-      questionId,
-    );
-    const optionIndex = question.options.findIndex(
-      (opt) => opt._id.toString() === optionId,
+    const result = await this.quizModel.updateOne(
+      {
+        _id: quizId,
+      },
+      {
+        $set: {
+          'questions.$[q].options.$[o].text': updateOptionDto.text,
+        },
+      },
+      {
+        arrayFilters: [{ 'q._id': questionId }, { 'o._id': optionId }],
+      },
     );
 
-    if (optionIndex === -1) {
-      throw new NotFoundException(`Option avec l'ID ${optionId} non trouvée`);
+    if (result.modifiedCount === 0) {
+      throw new NotFoundException('Quiz, question ou option introuvable');
     }
-
-    Object.assign(question.options[optionIndex], updateOptionDto);
-
-    await quiz.save();
-
-    const updatedOption = question.options[optionIndex];
 
     return {
       message: 'Option mise à jour avec succès',
       option: {
-        _id: updatedOption._id,
-        text: updatedOption.text,
+        _id: optionId,
+        text: updateOptionDto.text,
       },
     };
   }
 
   async removeOption(quizId: string, questionId: string, optionId: string) {
-    this.quizService.validateObjectId(quizId);
-    this.quizService.validateObjectId(questionId);
-    this.quizService.validateObjectId(optionId);
+    this.objectIdService.validateObjectId(quizId);
+    this.objectIdService.validateObjectId(questionId);
+    this.objectIdService.validateObjectId(optionId);
 
-    const quiz = await this.quizService.findQuizById(quizId);
-    const question = await this.quizQuestionsService.findOneQuestion(
-      quizId,
-      questionId,
+    // Vérifier le nombre d'options AVANT suppression
+    const quiz = await this.quizModel.findOne(
+      {
+        _id: quizId,
+        'questions._id': questionId,
+      },
+      {
+        'questions.$': 1,
+      },
     );
 
-    const optionIndex = question.options.findIndex(
-      (opt) => opt._id.toString() === optionId,
-    );
-
-    if (optionIndex === -1) {
-      throw new NotFoundException(`Option avec l'ID ${optionId} non trouvée`);
+    if (!quiz || quiz.questions.length === 0) {
+      throw new NotFoundException('Question introuvable');
     }
 
-    // Vérifier qu'il reste au moins 2 options après suppression
+    const question = quiz.questions[0];
+
     if (question.options.length <= 2) {
       throw new BadRequestException(
         'Une question doit avoir au moins 2 options',
       );
     }
 
-    // Supprimer l'option
-    question.options.splice(optionIndex, 1);
+    const result = await this.quizModel.updateOne(
+      {
+        _id: quizId,
+      },
+      {
+        $pull: {
+          'questions.$[q].options': { _id: optionId },
+        },
+      },
+      {
+        arrayFilters: [{ 'q._id': questionId }],
+      },
+    );
 
-    await quiz.save();
+    if (result.modifiedCount === 0) {
+      throw new NotFoundException('Option introuvable');
+    }
 
     return {
       message: 'Option supprimée avec succès',
@@ -177,9 +191,9 @@ export class QuizOptionsService {
     questionId: string,
     optionId: string,
   ) {
-    this.quizService.validateObjectId(quizId);
-    this.quizService.validateObjectId(questionId);
-    this.quizService.validateObjectId(optionId);
+    this.objectIdService.validateObjectId(quizId);
+    this.objectIdService.validateObjectId(questionId);
+    this.objectIdService.validateObjectId(optionId);
 
     const quiz = await this.quizModel
       .findById(quizId)

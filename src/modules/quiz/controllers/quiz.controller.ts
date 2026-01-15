@@ -39,4 +39,9 @@ export class QuizController {
   remove(@Param('id') id: string) {
     return this.quizService.remove(id);
   }
+
+  @Patch(':quizId/publish')
+  publish(@Param('quizId') quizId: string) {
+    return this.quizService.publishQuiz(quizId);
+  }
 }

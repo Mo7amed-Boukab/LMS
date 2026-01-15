@@ -1,13 +1,15 @@
 import {
-  IsArray,
+  // ArrayMinSize,
+  // IsArray,
   IsBoolean,
   IsEnum,
   IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsString,
+  // ValidateNested,
 } from 'class-validator';
-import { QuestionType } from '../entities/quiz.entity';
+import { QuestionType } from 'src/common/enums/question-type.enum';
 
 export class CreateOptionDto {
   @IsNotEmpty()
@@ -29,11 +31,11 @@ export class CreateQuestionDto {
   @IsEnum(QuestionType)
   type: QuestionType;
 
-  @IsArray()
-  @ArrayMinSize(2)
-  @ValidateNested({ each: true })
-  @Type(() => CreateOptionDto)
-  options: CreateOptionDto[];
+  // @IsArray()
+  // @ArrayMinSize(2)
+  // @ValidateNested({ each: true })
+  // @Type(() => CreateOptionDto)
+  // options: CreateOptionDto[];
 }
 
 export class CreateQuizDto {
@@ -43,11 +45,11 @@ export class CreateQuizDto {
   @IsNumber()
   passingScore: number;
 
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => CreateQuestionDto)
-  questions: CreateQuestionDto[];
+  // @IsArray()
+  // @ArrayMinSize(1)
+  // @ValidateNested({ each: true })
+  // @Type(() => CreateQuestionDto)
+  // questions: CreateQuestionDto[];
 
   @IsMongoId()
   moduleId: string;
