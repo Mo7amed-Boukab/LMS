@@ -1,22 +1,39 @@
 services:
-  nest-app:
+  api:
     container_name: nest-js-app
     build:
-      context: .
+      context: ./apps/api
       dockerfile: ./Dockerfile
     image: nest-api
     ports:
-      - "3000:3000"
+      - "4000:4000"
     environment:
       - MONGO_URI=mongodb://mongodb:27017/lms
-      - PORT=3000
+      - PORT=4000
     networks:
       - nestjs-network
     depends_on:
       - mongodb
     volumes:
-      - .:/user/src/app
-      - /user/src/app/node_modules
+      - ./apps/api:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  web:
+    container_name: next-js-app
+    build:
+      context: ./apps/web
+      dockerfile: ./Dockerfile
+    image: next-web
+    ports:
+      - "3000:3000"
+    networks:
+      - nextjs-network
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
     restart: unless-stopped
 
   mongodb:
@@ -32,4 +49,6 @@ services:
 
 networks:
   nestjs-network:
+    driver: bridge
+  nextjs-network:
     driver: bridge
