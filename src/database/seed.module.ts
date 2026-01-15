@@ -6,7 +6,7 @@ import {
   CourseModule,
   CourseModuleSchema,
 } from '../modules/course-modules/schemas/course-module.schema';
-import { CourseModuleSeeder } from './seeders/course-moudule.seeder';
+import { CourseModuleSeeder } from './seeders/course-module.seeder';
 
 @Module({
   imports: [
