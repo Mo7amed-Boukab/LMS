@@ -10,18 +10,18 @@ import { UpdateQuizDto } from '../dto/update-quiz.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Quiz } from '../schema/quiz.schema';
 import { Model } from 'mongoose';
-import { QuizStatus } from '../../../common/enums/quiz-status.enum';
-// import {
-//   CourseModule,
-//   CourseModuleDocument,
-// } from 'src/modules/course-modules/schemas/course-module.schema';
+import { QuizStatus } from '../../common/enums/quiz-status.enum';
+import {
+  CourseModuleDocument,
+  CourseModule,
+} from 'src/course-modules/schemas/course-module.schema';
 
 @Injectable()
 export class QuizService {
   constructor(
     @InjectModel('Quiz') private readonly quizModel: Model<Quiz>,
-    // @InjectModel(CourseModule.name)
-    // private moduleModel: Model<CourseModuleDocument>,
+    @InjectModel(CourseModule.name)
+    private moduleModel: Model<CourseModuleDocument>,
   ) {}
 
   async create(createQuizDto: CreateQuizDto): Promise<Quiz> {
@@ -31,7 +31,7 @@ export class QuizService {
       const existingQuiz = await this.quizModel.findOne({ title, moduleId });
 
       if (existingQuiz) {
-        throw new ConflictException('This quiz already exists for this module');
+        throw new ConflictException('Ce quiz existe déjà pour ce module');
       }
 
       const quiz = new this.quizModel(createQuizDto);
@@ -40,7 +40,7 @@ export class QuizService {
       if (error instanceof Error) {
         throw new InternalServerErrorException(error.message);
       } else {
-        throw new InternalServerErrorException('An error occurred');
+        throw new InternalServerErrorException('Une erreur est survenue');
       }
     }
   }
@@ -51,7 +51,7 @@ export class QuizService {
 
   async findQuizById(id: string): Promise<Quiz> {
     const quiz = await this.quizModel.findById(id).exec();
-    if (!quiz) throw new NotFoundException('Quiz not found');
+    if (!quiz) throw new NotFoundException('Quiz introuvable');
     return quiz;
   }
 
@@ -59,41 +59,41 @@ export class QuizService {
     const quiz = await this.quizModel.findByIdAndUpdate(id, updateQuizDto, {
       new: true,
     });
-    if (!quiz) throw new NotFoundException('Quiz not found');
+    if (!quiz) throw new NotFoundException('Quiz introuvable');
     return quiz;
   }
 
   async remove(id: string): Promise<void> {
     const result = await this.quizModel.findByIdAndDelete(id);
-    if (!result) throw new NotFoundException('Quiz not found');
+    if (!result) throw new NotFoundException('Quiz introuvable');
   }
 
   async publishQuiz(quizId: string) {
     const quiz = await this.quizModel.findById(quizId);
     if (!quiz) {
-      throw new NotFoundException('Quiz not found');
+      throw new NotFoundException('Quiz introuvable');
     }
 
-    // quiz must contain at least 4 questions
+    // un quiz doit contenir au moins 4 questions
     if (!quiz.questions || quiz.questions.length < 4) {
       throw new BadRequestException(
-        'The quiz must contain at least 4 questions',
+        'Le quiz doit contenir au moins 4 questions',
       );
     }
 
-    // each question must have options
+    // au moins deux options
     quiz.questions.forEach((question, index) => {
       if (!question.options || question.options.length < 2) {
         throw new BadRequestException(
-          `Question ${index + 1} must contain at least 2 options`,
+          `La question ${index + 1} doit contenir au moins 2 options`,
         );
       }
 
-      // at least one correct answer
+      // il faut avoir au mois une réponse correct
       const hasCorrect = question.options.some((opt) => opt.isCorrect);
       if (!hasCorrect) {
         throw new BadRequestException(
-          `Question ${index + 1} must have at least one correct answer`,
+          `La question ${index + 1} doit avoir au moins une bonne réponse`,
         );
       }
     });
@@ -102,7 +102,7 @@ export class QuizService {
     await quiz.save();
 
     return {
-      message: 'Quiz published successfully',
+      message: 'Quiz publié avec succès',
       quizId: quiz._id,
     };
   }

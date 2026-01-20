@@ -25,6 +25,7 @@ export class QuizQuestionsService {
     const quiz = await this.quizService.findQuizById(quizId);
     if (!quiz) throw new NotFoundException('Quiz introuvable');
 
+    // Vérifier que la question n'existe pas déjà
     const questionExists = quiz.questions.some(
       (q) =>
         q.text.trim().toLowerCase() ===
@@ -35,16 +36,25 @@ export class QuizQuestionsService {
       throw new BadRequestException('Cette question existe déjà dans le quiz.');
     }
 
+    // Vérifier qu'au moins une option est correcte
+    const hasCorrectOption = createQuestionDto.options.some(
+      (opt) => opt.isCorrect,
+    );
+    if (!hasCorrectOption) {
+      throw new BadRequestException(
+        'au moins une option doit être marquée comme correcte',
+      );
+    }
+
     const newQuestion: Question = {
       _id: new Types.ObjectId(),
       text: createQuestionDto.text,
       type: createQuestionDto.type,
-      options: [],
-      // createQuestionDto.options.map((opt) => ({
-      //   _id: new Types.ObjectId(),
-      //   text: opt.text,
-      //   isCorrect: opt.isCorrect,
-      // })),
+      options: createQuestionDto.options.map((opt) => ({
+        _id: new Types.ObjectId(),
+        text: opt.text,
+        isCorrect: opt.isCorrect,
+      })),
     };
     quiz.questions.push(newQuestion);
 
@@ -63,7 +73,7 @@ export class QuizQuestionsService {
       .exec();
 
     if (!quiz) {
-      throw new NotFoundException(`Quiz with ID ${quizId} not found`);
+      throw new NotFoundException(`Quiz avec l'ID ${quizId} non trouvé`);
     }
 
     return quiz.questions;
@@ -115,6 +125,32 @@ export class QuizQuestionsService {
       throw new NotFoundException(
         `Question avec l'ID ${questionId} non trouvée`,
       );
+    }
+
+    // si les options sont modifiés
+    if (updateQuestionDto.options) {
+      // Vérifier qu'il y a au moins 2 options
+      if (updateQuestionDto.options.length < 2) {
+        throw new BadRequestException(
+          'Une question doit avoir au moins 2 options',
+        );
+      }
+
+      // Vérifier qu'au moins une option est correcte
+      const hasCorrectOption = updateQuestionDto.options.some(
+        (opt) => opt.isCorrect,
+      );
+      if (!hasCorrectOption) {
+        throw new BadRequestException(
+          'Au moins une option doit être marquée comme correcte',
+        );
+      }
+
+      updateQuestionDto.options = updateQuestionDto.options.map((opt) => ({
+        _id: new Types.ObjectId(),
+        text: opt.text,
+        isCorrect: opt.isCorrect,
+      }));
     }
 
     Object.assign(quiz.questions[questionIndex], updateQuestionDto);

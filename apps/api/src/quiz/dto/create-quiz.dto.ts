@@ -1,4 +1,7 @@
+import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
+  IsArray,
   // ArrayMinSize,
   // IsArray,
   IsBoolean,
@@ -7,6 +10,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsString,
+  ValidateNested,
   // ValidateNested,
 } from 'class-validator';
 import { QuestionType } from 'src/common/enums/question-type.enum';
@@ -31,11 +35,11 @@ export class CreateQuestionDto {
   @IsEnum(QuestionType)
   type: QuestionType;
 
-  // @IsArray()
-  // @ArrayMinSize(2)
-  // @ValidateNested({ each: true })
-  // @Type(() => CreateOptionDto)
-  // options: CreateOptionDto[];
+  @IsArray()
+  @ArrayMinSize(2, { message: 'Une question doit avoir au moins 2 options' })
+  @ValidateNested({ each: true })
+  @Type(() => CreateOptionDto)
+  options: CreateOptionDto[];
 }
 
 export class CreateQuizDto {
@@ -44,12 +48,6 @@ export class CreateQuizDto {
 
   @IsNumber()
   passingScore: number;
-
-  // @IsArray()
-  // @ArrayMinSize(1)
-  // @ValidateNested({ each: true })
-  // @Type(() => CreateQuestionDto)
-  // questions: CreateQuestionDto[];
 
   @IsMongoId()
   moduleId: string;
