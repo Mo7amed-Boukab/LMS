@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Quiz, QuizStatus } from '@/lib/types/Quiz';
 import { Trash2, Eye, CheckCircle } from 'lucide-react';
-import { quizApi } from '@/lib/services/quizService';
+import { Quiz, QuizStatus } from '@/lib/types/quiz';
 
 interface QuizTableProps {
   initialQuizzes: Quiz[];
@@ -72,6 +71,7 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end gap-2">
                   <button
+
                     className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition"
                     title="Voir/Éditer"
                   >

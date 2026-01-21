@@ -1,4 +1,5 @@
-import { Quiz } from "../types/Quiz";
+import { Quiz } from "../types/quiz";
+
 
 export const quizApi = {
   getAll: async (): Promise<Quiz[]> => {

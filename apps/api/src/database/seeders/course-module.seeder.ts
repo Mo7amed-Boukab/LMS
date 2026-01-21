@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import {
   CourseModule,
   ModuleContentType,
-} from '../../modules/course-modules/schemas/course-module.schema';
+} from '../../course-modules/schemas/course-module.schema';
 
 @Injectable()
 export class CourseModuleSeeder {
