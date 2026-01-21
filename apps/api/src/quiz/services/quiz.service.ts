@@ -10,7 +10,7 @@ import { UpdateQuizDto } from '../dto/update-quiz.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Quiz } from '../schema/quiz.schema';
 import { Model } from 'mongoose';
-import { QuizStatus } from '../../../common/enums/quiz-status.enum';
+import { QuizStatus } from '../../common/enums/quiz-status.enum';
 // import {
 //   CourseModule,
 //   CourseModuleDocument,
