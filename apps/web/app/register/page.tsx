@@ -1,26 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import AuthLayout from '../components/auth/AuthLayout';
-import InputField from '../components/auth/InputField';
-import SocialButton from '../components/auth/SocialButton';
-import { authService } from '@/lib/auth-service';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import AuthLayout from "../../components/AuthLayout";
+import InputField from "../../components/InputField";
+import SocialButton from "../../components/SocialButton";
+import { authService } from "@/lib/auth-service";
 
-const registerSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -47,9 +49,9 @@ export default function RegisterPage() {
         firstName: data.firstName,
         lastName: data.lastName,
       });
-      router.push('/login');
+      router.push("/login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +64,9 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout>
-      <h1 className="text-center text-2xl font-extrabold text-gray-800">Create Account</h1>
+      <h1 className="text-center text-2xl font-extrabold text-gray-800">
+        Create Account
+      </h1>
       <p className="text-center text-sm text-gray-500 mt-2">
         Join ED Academy and start your learning journey today.
       </p>
@@ -74,7 +78,7 @@ export default function RegisterPage() {
           </div>
         )}
         <InputField
-          {...register('firstName')}
+          {...register("firstName")}
           id="firstName"
           label="First Name"
           icon="person"
@@ -85,7 +89,7 @@ export default function RegisterPage() {
         />
 
         <InputField
-          {...register('lastName')}
+          {...register("lastName")}
           id="lastName"
           label="Last Name"
           icon="person"
@@ -96,7 +100,7 @@ export default function RegisterPage() {
         />
 
         <InputField
-          {...register('email')}
+          {...register("email")}
           id="email"
           label="Email Address"
           icon="mail"
@@ -107,7 +111,7 @@ export default function RegisterPage() {
         />
 
         <InputField
-          {...register('password')}
+          {...register("password")}
           id="password"
           label="Password"
           icon="lock"
@@ -119,7 +123,7 @@ export default function RegisterPage() {
         />
 
         <InputField
-          {...register('confirmPassword')}
+          {...register("confirmPassword")}
           id="confirmPassword"
           label="Confirm Password"
           icon="lock"
@@ -136,8 +140,10 @@ export default function RegisterPage() {
             disabled={isLoading}
             className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-semibold py-3 rounded-xl shadow-xl transform-gpu transition hover:translate-y-0.5 flex items-center justify-center gap-2"
           >
-            <span>{isLoading ? 'Creating Account...' : 'Create Account'}</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <span>{isLoading ? "Creating Account..." : "Create Account"}</span>
+            <span className="material-symbols-outlined text-[16px]">
+              arrow_forward
+            </span>
           </button>
         </div>
       </form>
@@ -150,13 +156,22 @@ export default function RegisterPage() {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <SocialButton provider="google" onClick={() => handleSocialRegister('google')} />
-          <SocialButton provider="microsoft" onClick={() => handleSocialRegister('microsoft')} />
+          <SocialButton
+            provider="google"
+            onClick={() => handleSocialRegister("google")}
+          />
+          <SocialButton
+            provider="microsoft"
+            onClick={() => handleSocialRegister("microsoft")}
+          />
         </div>
 
         <p className="mt-5 text-center text-sm text-gray-500">
-          Already have an account?{' '}
-          <Link href="/login" className="font-semibold text-gray-800 hover:underline">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-gray-800 hover:underline"
+          >
             Sign in now
           </Link>
         </p>
@@ -164,9 +179,15 @@ export default function RegisterPage() {
 
       <div className="mt-6 pt-6 text-center text-xs text-gray-400 border-t">
         <div className="flex items-center justify-center gap-6">
-          <a href="#" className="hover:underline">Privacy Policy</a>
-          <a href="#" className="hover:underline">Terms of Service</a>
-          <a href="#" className="hover:underline">Help Center</a>
+          <a href="#" className="hover:underline">
+            Privacy Policy
+          </a>
+          <a href="#" className="hover:underline">
+            Terms of Service
+          </a>
+          <a href="#" className="hover:underline">
+            Help Center
+          </a>
         </div>
       </div>
     </AuthLayout>
