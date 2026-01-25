@@ -1,7 +1,7 @@
 export default function HeroSection() {
     return (
-        <section className="relative pt-12 pb-16 lg:pt-20 lg:pb-24">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="relative pt-12 pb-16 lg:pt-20 lg:pb-24 bg-gradient-to-br from-white to-gray-50">
+            <div className="max-w-[1340px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 items-center">
                     {/* Text Content */}
                     <div className="flex flex-col gap-6 max-w-2xl">

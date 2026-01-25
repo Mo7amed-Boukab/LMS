@@ -50,7 +50,7 @@ const courses = [
 export default function PopularCoursesSection() {
     return (
         <section className="py-16 bg-gray-50">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1340px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col sm:flex-row justify-between items-end mb-10 gap-4">
                     <div>
                         <h2 className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mb-2">Popular Courses</h2>

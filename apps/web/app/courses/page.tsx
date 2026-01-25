@@ -15,6 +15,7 @@ const courses = [
         instructorName: "Dr. Eleanor Vance",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAs0MLIvqVWoAD8vjo9-sei19vxotl5mo4rRx4tuKyUEt_ME7pg1j-A3JiB0aegZ83xNOoVprMcckS2waXSv8CpSmaEJaOEOoJeUThdN8BrLc14_hjJhpwoZA0j-L0rnZXKeai9pD-oPk3sBISseGjNZ19fZCjdaWkhyVg42HdM0N9r2i8pg7_VCSIlrPplAtlpGhvgiSd5Ri7veIza6H4cnczxnhc1J3Ar3zMMvsaYJtkLSkn0IjDHq_GWNkEb0NEj00xgHcup8yvf",
         price: "$49.99",
+        slug: "advanced-strategic-management",
     },
     {
         category: "Design",
@@ -26,6 +27,7 @@ const courses = [
         instructorName: "Sarah Jenkins",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBwQpZ_z6VaahUhaC30dsRnWD3Dz8IONunNdE4hEpOHhis7U8MTgR55Z7BS6TOKjXQMYf3qMtMx-R7ggyDhab65wyvnl_6iywFWQy9lzAJt90ft8WDzi9FBjowSa1zM5bmMrz0pve7CX2a7NthZZ6Rp0YKa03wYYKSZuBcoFcHj47rI5cGkPl7jaEVYgY5ckug6dOtSnlo9u86eKxgpyE5iH2tQ31azVzvNye6i5DQBQIfp2I_dXI10YLYCNBZ7YE86I8TsV7cUZXnK",
         price: "$89.99",
+        slug: "ui-ux-design",
     },
     {
         category: "Development",
@@ -37,6 +39,7 @@ const courses = [
         instructorName: "Michael Chen",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCLsSBLj4ftsDUHcBb8FoBFYFNU93DAasTRk9eGNn8C7T0GfWL1E-JmoZv-4mGOW8g9ZDV6vEG9-CXLA-xHemMiVvcatskyE1LJESStjT9B3dm7xAykpdamAM61YWnncAmmyqdTDY20nEPfKu5p1LGU2xrBCT8rEoK7CxK4eJ-_PXVepZDQvfKCLDETJP0SmGwWRHnjF_PTQva3EaDBVSLC8j08o6zYrzkRSXvp-QaQTqu6MKlFmk_t_zaFkorcHsC5vq96_KSciEUn",
         price: "$69.99",
+        slug: "python-for-data-science-bootcamp",
     },
     {
         category: "Business",
@@ -48,6 +51,7 @@ const courses = [
         instructorName: "Robert Fox",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAs0MLIvqVWoAD8vjo9-sei19vxotl5mo4rRx4tuKyUEt_ME7pg1j-A3JiB0aegZ83xNOoVprMcckS2waXSv8CpSmaEJaOEOoJeUThdN8BrLc14_hjJhpwoZA0j-L0rnZXKeai9pD-oPk3sBISseGjNZ19fZCjdaWkhyVg42HdM0N9r2i8pg7_VCSIlrPplAtlpGhvgiSd5Ri7veIza6H4cnczxnhc1J3Ar3zMMvsaYJtkLSkn0IjDHq_GWNkEb0NEj00xgHcup8yvf",
         price: "$129.00",
+        slug: "executive-leadership-principals",
     },
     {
         category: "Marketing",
@@ -59,7 +63,8 @@ const courses = [
         instructorName: "Amanda Cooper",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDM9fXlgVdkd7B1i2zwS37n0rjfwMv_hLzv5f-OOj8DKCh0Vkp59z4wvLgdMD91NkQUfmbSF_CFUsgZ0EC0FTko-bQCpc2WRrMQ4iO-kD1oKKi5HdM8Su_pnh2_uoTS515LldBgyFiYkDQnx8mDgusPtfwcpwhRbYG2QLvyD7v_acEoTx7lJIRFOrGuvY_tppzYvPBwQc8_uvfEt4TLzSuIXHTvy1_JHWXfIEOG7XCyEKQ5HHA0yzNtK_ceO8Ra0fNV9G1drVni0JUB",
         price: "$34.99",
-    },
+        slug: "digital-marketing-seo-2024",
+    },  
     {
         category: "Development",
         imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAKPdl81Rsiejzx8021ceM9VES6y7ZUXGKnM0qyryXQoXiDUDXdEhjonq8id_0sRJtgMlUyPWaJ8f82YW9Jsj10IDZJC1DwlBYiHWLffB24rgPGvH53N9eh_mVLIoo6Dw-O1gy1_k0bnKdXPCDRUaqnnpNee3PKYOfXZSjdqIz47Os7hbV39XPkEd-970s4-DiYGboJL6fNzZxS26STViEv5YEpsR-CRhUk-1s64bCm8UrJQWGkYUZIC1oOmOjtkWSXJJ6prRBcIiUu",
@@ -70,6 +75,7 @@ const courses = [
         instructorName: "David Kim",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDyYEXL6R6xBsFyYp7gzjmZdhrCvjbyuBJVNvwptASJdzZOhhh-sI04sVvR-cWqheSU4_1SFZ271yo2nJ_JPJgVs8oZwuyfulbSNN_vYhg9Iyj1bgWDViYWQpIjdm_aeYfCbtDYBWmBVG6ZjJGSuYRxsHAD4R1x-22RZxYk0fHx_5a6rlB_EVC7tqm4OVxpBLP2hoTJIOB9NsoA3S4jE9OcyViruD8mNRRa_NiLYCZNoXOqDvt0im5th5-Pc5JpfOy5ypVswu9X5V7d",
         price: "$59.99",
+        slug: "rust-programming-for-beginners",
     },
     {
         category: "Business",
@@ -81,6 +87,7 @@ const courses = [
         instructorName: "Jennifer Lo",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAM4u0wSgMLsOaAOHVIZWqUrPRq47u_8N3aYF6KXEdn4AXBB3cmOmlEBDwsLGbU0ook1ADym6nJNJxXP3QoNMgnWCoK_lscUVeSHEGyTL06SNptWcoeE_exUsK4IZQS4Fs556Cfyj2XHdVA4svDIia_VEkfP3UHnqH62J4D1x7ZowDB5LRlV7s17PMt0UboANVn8DC25mmlfavRbLqRJccvn7106WexxNsE0abCaxWcgtKAV56Ki2lZpklSkpIqH2i_zmlC7umdM3-g",
         price: "$39.99",
+        slug: "human-resources-fundamentals",
     },
     {
         category: "Design",
@@ -92,6 +99,7 @@ const courses = [
         instructorName: "Chris Martin",
         instructorAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBQo7D3SKZtC2cTKKPbIG-bJ75z7LXUWpV9A9UnNj_paYQCRsQ1IvWWksolRSIv5g1HO5twOb9TUxJb-k5EefGCyx1KnbjsBtkr6q94AHomieA0nQCsU5odUYmO9wBCpIO1f2RS9TPpnykd4mBXIZzoZRJv6rRHGYkFuPVB5TgZgeyV7zPLP6R-Xp6gu9fl89BgvH2ffW9BFElyM9_qRIPB3qeUWBDQRZJGgW5jPilK7hgYn9bEHvX46tW4OLpljXnvPeALpeZpg2xF",
         price: "$64.99",
+        slug: "blender-3d-modeling-deep-dive",
     },
 ];
 
@@ -100,7 +108,7 @@ export default function CoursesPage() {
         <div className="flex flex-col min-h-screen">
             <Header />
             <div className="flex flex-1 w-full bg-white">
-              
+
 
                 {/* Main Content */}
                 <main className="flex-1">
@@ -161,6 +169,7 @@ export default function CoursesPage() {
                                         instructorName={course.instructorName}
                                         instructorAvatar={course.instructorAvatar}
                                         price={course.price}
+                                        slug={course.slug}
                                     />
                                 ))}
                             </div>
