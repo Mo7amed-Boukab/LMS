@@ -1,0 +1,50 @@
+"use client";
+
+import { BookOpen, Users, FileQuestion, DollarSign } from "lucide-react";
+import DashboardHeader from "@/app/components/dashboard/DashboardHeader";
+import StatCard from "@/app/components/dashboard/StatCard";
+import RecentCourses from "@/app/components/dashboard/RecentCourses";
+
+export default function TeacherDashboard() {
+    return (
+        <>
+            <DashboardHeader
+                title="Welcome back, Mohamed"
+                description="Here's what's happening with your courses today."
+            />
+
+            <div className="p-6 max-w-7xl mx-auto space-y-8">
+                {/* Stats Overview - 4 cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <StatCard
+                        title="Total Courses"
+                        value="12"
+                        trend="+2"
+                        trendUp={true}
+                    />
+                    <StatCard
+                        title="Total Enrollments"
+                        value="1,240"
+                        trend="+12%"
+                        trendUp={true}
+                    />
+                    <StatCard
+                        title="Total Quizzes"
+                        value="48"
+                        trend="+5"
+                        trendUp={true}
+                    />
+                    <StatCard
+                        title="Total Revenue"
+                        value="$12,450"
+                        trend="+8%"
+                        trendUp={true}
+                    />
+                </div>
+
+                {/* Recent Courses Table */}
+                <RecentCourses />
+            </div>
+        </>
+    );
+}
