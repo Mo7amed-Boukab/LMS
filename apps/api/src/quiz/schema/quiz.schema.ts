@@ -11,7 +11,7 @@ export class Option {
   @Prop({ required: true })
   text: string;
 
-  @Prop({ required: true, select: false })
+  @Prop({ required: true })
   isCorrect: boolean;
 }
 export const OptionSchema = SchemaFactory.createForClass(Option);
