@@ -1,0 +1,59 @@
+import { GraduationCap, Search } from "lucide-react";
+import Link from "next/link";
+
+export default function Header() {
+    return (
+        <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between gap-16">
+                    {/* Logo */}
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center size-8 rounded bg-red-700 text-white">
+                            <GraduationCap size={20} />
+                        </div>
+                        <Link href="/" className="text-xl font-bold tracking-tight text-[#1a1a1a]">ED Academy</Link>
+                    </div>
+
+                    {/* Desktop Nav */}
+                    <nav className="hidden md:flex items-center gap-8">
+                        <Link className="text-sm font-medium text-[#1a1a1a] hover:text-red-700 transition-colors" href="/">
+                            Home
+                        </Link>
+                        <Link className="text-sm font-medium text-[#1a1a1a] hover:text-red-700 transition-colors" href="/courses">
+                            Courses
+                        </Link>
+                        <Link className="text-sm font-medium text-[#1a1a1a] hover:text-red-700 transition-colors" href="/about">
+                            About
+                        </Link>
+                        <Link className="text-sm font-medium text-[#1a1a1a] hover:text-red-700 transition-colors" href="/contact">
+                            Contact
+                        </Link>
+                    </nav>
+
+                    <div className="flex flex-1 justify-end gap-6 items-center">
+                        {/* Search Bar */}
+                        <div className="hidden lg:flex items-center w-full max-w-xs h-10 rounded border border-gray-200 focus-within:border-red-700/50 transition-colors overflow-hidden">
+                            <div className="flex items-center justify-center pl-3 text-gray-500">
+                                 <Search size={18}/>
+                            </div>
+                            <input
+                                className="w-full h-full border-none outline-none text-sm px-3 text-[#1a1a1a] placeholder:text-gray-500"
+                                placeholder="Search courses..."
+                            />
+                        </div>
+
+                        {/* Auth Buttons */}
+                        <div className="flex items-center gap-3">
+                            <button className="hidden sm:flex items-center justify-center py-2 px-4 rounded text-sm font-medium text-[#1a1a1a] hover:bg-gray-100 transition-colors">
+                                Log In
+                            </button>
+                            <button className="flex items-center justify-center py-2 px-4 rounded bg-red-700 text-white text-sm font-medium hover:bg-red-800 transition-colors">
+                                Get started
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+    );
+}

@@ -26,7 +26,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
         />
       </head>
-      <body className={`${manrope.variable} font-display antialiased bg-white`}>
+      <body className={`${manrope.className} antialiased bg-white text-[#1a1a1a]`}>
         {children}
       </body>
     </html>
