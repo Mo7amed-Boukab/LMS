@@ -32,11 +32,11 @@ export interface Quiz {
   updatedAt?: string;
 }
 
-// export interface CreateQuizDto {
-//   moduleId: string;
-//   title: string;
-//   passingScore: number;
-// }
+export interface CreateQuizDto {
+  moduleId: string;
+  title: string;
+  passingScore: number;
+}
 
 // export interface CreateQuestionDto {
 //   text: string;

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Plus } from 'lucide-react';
-import QuizTable from "@/components/QuizTable";
+import QuizTable from "@/components/quiz/QuizTable";
 import { quizApi } from "@/lib/services/quizService";
 import { Quiz } from "@/lib/types/quiz";
 
@@ -20,7 +20,7 @@ const QuizzesPage: React.FC = async () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Gestion des Quizzes</h1>
         <Link
-          href="/quizzes/create"
+          href="./quizzes/create"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         >
           <Plus size={20} />
