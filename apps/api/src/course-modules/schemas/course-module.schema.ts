@@ -1,20 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
-export enum ModuleContentType {
-  PDF = 'PDF',
-  VIDEO = 'VIDEO',
-}
-
 export type CourseModuleDocument = HydratedDocument<CourseModule>;
 
+/**
+ * CourseModule représente une SECTION du cours
+ * Chaque section contient plusieurs CourseLesson
+ */
 @Schema({ timestamps: true })
 export class CourseModule {
   @Prop({ required: true, trim: true, maxlength: 200 })
   title: string;
-
-  @Prop({ trim: true, maxlength: 1000 })
-  description: string;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -27,29 +23,8 @@ export class CourseModule {
   @Prop({ required: true, min: 0 })
   order: number;
 
-  @Prop({ required: true, enum: ModuleContentType })
-  type: ModuleContentType;
-
-  @Prop({ required: true })
-  contentUrl: string;
-
   @Prop({ default: true })
   isActive: boolean;
-
-  /**
-   * Métadonnées extensibles pour stocker des informations supplémentaires
-   * comme : durée de la vidéo, nombre de pages du PDF, taille du fichier, etc.
-   */
-  /**
-   * @example
-   * {
-   *   duration: 120,
-   *   pages: 100,
-   *   size: 1024
-   * }
-   */
-  @Prop({ type: Object, default: {} })
-  metadata: Record<string, any>;
 
   createdAt?: Date;
   updatedAt?: Date;

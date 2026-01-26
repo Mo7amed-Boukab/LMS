@@ -10,7 +10,6 @@ import { Model, Types } from 'mongoose';
 import {
   CourseModule,
   CourseModuleDocument,
-  ModuleContentType,
 } from './schemas/course-module.schema';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
@@ -25,7 +24,7 @@ export class CourseModulesService {
 
     @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
-  ) {}
+  ) { }
 
   /* -------------------------------------------------------------------------- */
   /*                               CREATE MODULE                                 */
@@ -37,8 +36,6 @@ export class CourseModulesService {
     if (!Types.ObjectId.isValid(createDto.courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
-
-    this.validateMetadata(createDto.type, createDto.metadata);
 
     const course = await this.courseModel.findById(createDto.courseId).exec();
 
@@ -129,12 +126,6 @@ export class CourseModulesService {
       throw new ForbiddenException('You do not own this course');
     }
 
-    if (updateDto.type || updateDto.metadata) {
-      const type = updateDto.type || module.type;
-      const metadata = updateDto.metadata || module.metadata;
-      this.validateMetadata(type, metadata);
-    }
-
     Object.assign(module, updateDto);
     return module.save();
   }
@@ -162,29 +153,6 @@ export class CourseModulesService {
     }
   }
 
-  private validateMetadata(type: ModuleContentType, metadata: any) {
-    if (!metadata) return;
-
-    if (type === ModuleContentType.VIDEO) {
-      if (
-        metadata.duration !== undefined &&
-        typeof metadata.duration !== 'number'
-      ) {
-        throw new BadRequestException(
-          'Video metadata duration must be a number',
-        );
-      }
-    } else if (type === ModuleContentType.PDF) {
-      if (
-        metadata.pageCount !== undefined &&
-        typeof metadata.pageCount !== 'number'
-      ) {
-        throw new BadRequestException(
-          'PDF metadata pageCount must be a number',
-        );
-      }
-    }
-  }
 
   /* -------------------------------------------------------------------------- */
   /*                               DELETE MODULE                                  */
