@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2, Eye, CheckCircle } from 'lucide-react';
 import { Quiz, QuizStatus } from '@/lib/types/quiz';
+import { quizApi } from '@/lib/services/quizService';
 
 interface QuizTableProps {
   initialQuizzes: Quiz[];
@@ -13,12 +14,21 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>(initialQuizzes);
 
+  const handleDelete = async (id: string)=> {
+    try {
+      await quizApi.delete(id);
+      setQuizzes((prev) => prev.filter((q) => q._id !== id))
+    } catch (error) {
+      console.log("erreur lors de la suppression du quiz")
+    }
+  }
+
   if (quizzes.length === 0) {
     return (
       <div className="text-center py-12 bg-gray-50 rounded-lg">
         <p className="text-gray-500 mb-4">Aucun quiz créé</p>
         <button
-          onClick={() => router.push('/quizzes/create')}
+          onClick={() => router.push('admin/quizzes/create')}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           Créer votre premier quiz
@@ -42,6 +52,9 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
               Statut
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Passing score
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Questions
             </th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -61,7 +74,10 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
                 <div className="text-sm text-gray-500">{quiz.moduleId}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                quiz.status
+                {quiz.status}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                {quiz.passingScore}%
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-900">
@@ -72,7 +88,7 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
                 <div className="flex justify-end gap-2">
                   <button
 
-                    className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition"
+                    className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition cursor-pointer"
                     title="Voir/Éditer"
                   >
                     <Eye size={18} />
@@ -80,18 +96,17 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
                   
                   {quiz.status === QuizStatus.DRAFT && (
                     <button
-                      className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded transition disabled:opacity-50 cursor-pointer"
                     >
-                        <div className="w-[18px] h-[18px] border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
                         <CheckCircle size={18} />
                     </button>
                   )}
                   
                   <button
-                    className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition disabled:opacity-50"
+                    onClick={()=> handleDelete(quiz._id)}
+                    className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition disabled:opacity-50 cursor-pointer"
                     title="Supprimer"
                   >
-                      <div className="w-[18px] h-[18px] border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
                       <Trash2 size={18} />
                   </button>
                 </div>
