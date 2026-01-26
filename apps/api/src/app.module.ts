@@ -8,6 +8,7 @@ import { CommonModule } from './common/common.module';
 import { CoursesModule } from './courses/courses.module';
 import { CourseModulesModule } from './course-modules/course-modules.module';
 import { CourseLessonsModule } from './course-lessons/course-lessons.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CourseLessonsModule } from './course-lessons/course-lessons.module';
     CoursesModule,
     CourseModulesModule,
     CourseLessonsModule,
+    UploadsModule,
     CommonModule,
   ],
 })
