@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
 } from '@nestjs/common';
 import { CreateQuestionDto } from '../dto/create-quiz.dto';
 import { QuizQuestionsService } from '../services/quiz-questions.service';
@@ -36,7 +36,7 @@ export class QuizQuestionsController {
     return this.quizQuestionsService.findOneQuestion(quizId, questionId);
   }
 
-  @Put(':questionId')
+  @Patch(':questionId')
   async updateQuestion(
     @Param('quizId') quizId: string,
     @Param('questionId') questionId: string,

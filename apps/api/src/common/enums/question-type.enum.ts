@@ -1,5 +1,5 @@
 export enum QuestionType {
   QCM = 'QCM',
-  BOOLEAN = 'boolean',
+  VRAI_FAUX = 'VRAI_FAUX',
   MULTIPLE = 'multiple choises',
 }
