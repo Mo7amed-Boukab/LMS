@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CourseModulesController } from './course-modules.controller';
 import { CourseModulesService } from './course-modules.service';
 import {
-  CourseModule,
+  Module as CourseModuleEntity,
   CourseModuleSchema,
 } from './schemas/course-module.schema';
 import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
@@ -12,7 +12,7 @@ import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
   imports: [
     MongooseModule.forFeature([
       {
-        name: CourseModule.name,
+        name: CourseModuleEntity.name,
         schema: CourseModuleSchema,
       },
       {

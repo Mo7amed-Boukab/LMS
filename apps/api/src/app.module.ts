@@ -4,8 +4,11 @@ import { AuthModule } from './auth/auth.module';
 import { QuizModule } from './quiz/quiz.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CourseModule } from './course-modules/schemas/course-module.schema';
 import { CommonModule } from './common/common.module';
+import { CoursesModule } from './courses/courses.module';
+import { CourseModulesModule } from './course-modules/course-modules.module';
+import { CourseLessonsModule } from './course-lessons/course-lessons.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -24,8 +27,11 @@ import { CommonModule } from './common/common.module';
     DatabaseModule,
     AuthModule,
     QuizModule,
-    CourseModule,
+    CoursesModule,
+    CourseModulesModule,
+    CourseLessonsModule,
+    UploadsModule,
     CommonModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
