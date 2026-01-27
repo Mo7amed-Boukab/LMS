@@ -3,7 +3,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import {
-  CourseModule,
+  Module as CourseModuleEntity,
   CourseModuleSchema,
 } from '../course-modules/schemas/course-module.schema';
 import { CourseModuleSeeder } from './seeders/course-module.seeder';
@@ -12,7 +12,7 @@ import { CourseModuleSeeder } from './seeders/course-module.seeder';
   imports: [
     MongooseModule.forRoot(process.env.MONGO_URI!),
     MongooseModule.forFeature([
-      { name: CourseModule.name, schema: CourseModuleSchema },
+      { name: CourseModuleEntity.name, schema: CourseModuleSchema },
     ]),
   ],
   providers: [CourseModuleSeeder],

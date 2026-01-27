@@ -13,14 +13,14 @@ import { Model } from 'mongoose';
 import { QuizStatus } from '../../common/enums/quiz-status.enum';
 import {
   CourseModuleDocument,
-  CourseModule,
+  Module as CourseModuleEntity,
 } from 'src/course-modules/schemas/course-module.schema';
 
 @Injectable()
 export class QuizService {
   constructor(
     @InjectModel('Quiz') private readonly quizModel: Model<Quiz>,
-    @InjectModel(CourseModule.name)
+    @InjectModel(CourseModuleEntity.name)
     private moduleModel: Model<CourseModuleDocument>,
   ) {}
 

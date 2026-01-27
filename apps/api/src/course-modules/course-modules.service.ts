@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import {
-  CourseModule,
+  Module as CourseModuleEntity,
   CourseModuleDocument,
 } from './schemas/course-module.schema';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
@@ -19,12 +19,12 @@ import { Course, CourseDocument } from 'src/courses/schemas/course.schema';
 @Injectable()
 export class CourseModulesService {
   constructor(
-    @InjectModel(CourseModule.name)
+    @InjectModel(CourseModuleEntity.name)
     private readonly courseModuleModel: Model<CourseModuleDocument>,
 
     @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
-  ) { }
+  ) {}
 
   /* -------------------------------------------------------------------------- */
   /*                               CREATE MODULE                                 */
@@ -32,7 +32,7 @@ export class CourseModulesService {
   async create(
     createDto: CreateCourseModuleDto,
     userId: string,
-  ): Promise<CourseModule> {
+  ): Promise<CourseModuleEntity> {
     if (!Types.ObjectId.isValid(createDto.courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
@@ -69,7 +69,7 @@ export class CourseModulesService {
   /* -------------------------------------------------------------------------- */
   /*                         GET MODULES BY COURSE                                */
   /* -------------------------------------------------------------------------- */
-  async getModulesByCourse(courseId: string): Promise<CourseModule[]> {
+  async getModulesByCourse(courseId: string): Promise<CourseModuleEntity[]> {
     if (!Types.ObjectId.isValid(courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
@@ -84,7 +84,7 @@ export class CourseModulesService {
   /* -------------------------------------------------------------------------- */
   /*                               FIND ONE MODULE                                */
   /* -------------------------------------------------------------------------- */
-  async findOne(id: string): Promise<CourseModule> {
+  async findOne(id: string): Promise<CourseModuleEntity> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid module id');
     }
@@ -105,7 +105,7 @@ export class CourseModulesService {
     id: string,
     updateDto: UpdateCourseModuleDto,
     userId: string,
-  ): Promise<CourseModule> {
+  ): Promise<CourseModuleEntity> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid module id');
     }
@@ -152,7 +152,6 @@ export class CourseModulesService {
       await this.courseModuleModel.bulkWrite(bulkOps);
     }
   }
-
 
   /* -------------------------------------------------------------------------- */
   /*                               DELETE MODULE                                  */

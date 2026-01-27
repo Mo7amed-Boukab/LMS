@@ -6,13 +6,16 @@ import { QuizSchema } from './schema/quiz.schema';
 import { QuizQuestionsService } from './services/quiz-questions.service';
 import { QuizQuestionsController } from './controllers/quiz-questions.controller';
 import { CourseSchema } from 'src/courses/schemas/course.schema';
-import { CourseModule } from 'src/course-modules/schemas/course-module.schema';
+import {
+  Module as CourseModuleEntity,
+  CourseModuleSchema,
+} from 'src/course-modules/schemas/course-module.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Quiz', schema: QuizSchema },
-      { name: CourseModule.name, schema: CourseSchema },
+      { name: CourseModuleEntity.name, schema: CourseModuleSchema },
     ]),
   ],
   controllers: [QuizController, QuizQuestionsController],

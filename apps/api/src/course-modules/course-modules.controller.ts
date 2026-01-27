@@ -13,8 +13,9 @@ import {
 import { CourseModulesService } from './course-modules.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
-import { CourseModule } from './schemas/course-module.schema';
+import { Module as CourseModuleEntity } from './schemas/course-module.schema';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from 'src/common/interfaces/request-with-user.interface';
 
 @Controller('course-modules')
 @UseGuards(JwtAuthGuard)
@@ -27,9 +28,9 @@ export class CourseModulesController {
   @Post()
   create(
     @Body() createDto: CreateCourseModuleDto,
-    @Req() req: any,
-  ): Promise<CourseModule> {
-    return this.courseModulesService.create(createDto, req.user._id);
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CourseModuleEntity> {
+    return this.courseModulesService.create(createDto, req.user.userId);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -38,7 +39,7 @@ export class CourseModulesController {
   @Get('course/:courseId')
   getCourseModules(
     @Param('courseId') courseId: string,
-  ): Promise<CourseModule[]> {
+  ): Promise<CourseModuleEntity[]> {
     return this.courseModulesService.getModulesByCourse(courseId);
   }
 
@@ -46,7 +47,7 @@ export class CourseModulesController {
   /*                               GET ONE MODULE                                  */
   /* -------------------------------------------------------------------------- */
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<CourseModule> {
+  findOne(@Param('id') id: string): Promise<CourseModuleEntity> {
     return this.courseModulesService.findOne(id);
   }
 
@@ -57,9 +58,9 @@ export class CourseModulesController {
   update(
     @Param('id') id: string,
     @Body() updateDto: UpdateCourseModuleDto,
-    @Req() req: any,
-  ): Promise<CourseModule> {
-    return this.courseModulesService.update(id, updateDto, req.user._id);
+    @Req() req: AuthenticatedRequest,
+  ): Promise<CourseModuleEntity> {
+    return this.courseModulesService.update(id, updateDto, req.user.userId);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -80,9 +81,9 @@ export class CourseModulesController {
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ): Promise<{ message: string }> {
-    await this.courseModulesService.remove(id, req.user._id);
+    await this.courseModulesService.remove(id, req.user.userId);
     return { message: 'Module deleted successfully' };
   }
 }

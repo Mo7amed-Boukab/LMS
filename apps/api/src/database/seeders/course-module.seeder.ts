@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CourseModule } from '../../course-modules/schemas/course-module.schema';
+import { Module as CourseModuleEntity } from '../../course-modules/schemas/course-module.schema';
 
 @Injectable()
 export class CourseModuleSeeder {
   constructor(
-    @InjectModel(CourseModule.name)
-    private readonly moduleModel: Model<CourseModule>,
-  ) { }
+    @InjectModel(CourseModuleEntity.name)
+    private readonly moduleModel: Model<CourseModuleEntity>,
+  ) {}
 
   async seed(): Promise<Types.ObjectId> {
     const existing = await this.moduleModel.findOne({

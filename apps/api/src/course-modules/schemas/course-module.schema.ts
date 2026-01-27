@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
 
-export type CourseModuleDocument = HydratedDocument<CourseModule>;
+export type CourseModuleDocument = HydratedDocument<Module>;
 
 /**
- * CourseModule représente une SECTION du cours
+ * Module représente une SECTION du cours
  * Chaque section contient plusieurs CourseLesson
  */
-@Schema({ timestamps: true })
-export class CourseModule {
+@Schema({ timestamps: true, collection: 'coursemodules' })
+export class Module {
   @Prop({ required: true, trim: true, maxlength: 200 })
   title: string;
 
@@ -30,7 +30,7 @@ export class CourseModule {
   updatedAt?: Date;
 }
 
-export const CourseModuleSchema = SchemaFactory.createForClass(CourseModule);
+export const CourseModuleSchema = SchemaFactory.createForClass(Module);
 
 /**
  * Index composé pour optimiser les requêtes :
