@@ -8,9 +8,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
 import {
-  CourseModule,
+  Module as CourseModuleEntity,
   CourseModuleDocument,
-  ModuleContentType,
 } from './schemas/course-module.schema';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
@@ -20,7 +19,7 @@ import { Course, CourseDocument } from 'src/courses/schemas/course.schema';
 @Injectable()
 export class CourseModulesService {
   constructor(
-    @InjectModel(CourseModule.name)
+    @InjectModel(CourseModuleEntity.name)
     private readonly courseModuleModel: Model<CourseModuleDocument>,
 
     @InjectModel(Course.name)
@@ -33,12 +32,10 @@ export class CourseModulesService {
   async create(
     createDto: CreateCourseModuleDto,
     userId: string,
-  ): Promise<CourseModule> {
+  ): Promise<CourseModuleEntity> {
     if (!Types.ObjectId.isValid(createDto.courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
-
-    this.validateMetadata(createDto.type, createDto.metadata);
 
     const course = await this.courseModel.findById(createDto.courseId).exec();
 
@@ -72,7 +69,7 @@ export class CourseModulesService {
   /* -------------------------------------------------------------------------- */
   /*                         GET MODULES BY COURSE                                */
   /* -------------------------------------------------------------------------- */
-  async getModulesByCourse(courseId: string): Promise<CourseModule[]> {
+  async getModulesByCourse(courseId: string): Promise<CourseModuleEntity[]> {
     if (!Types.ObjectId.isValid(courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
@@ -87,7 +84,7 @@ export class CourseModulesService {
   /* -------------------------------------------------------------------------- */
   /*                               FIND ONE MODULE                                */
   /* -------------------------------------------------------------------------- */
-  async findOne(id: string): Promise<CourseModule> {
+  async findOne(id: string): Promise<CourseModuleEntity> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid module id');
     }
@@ -108,7 +105,7 @@ export class CourseModulesService {
     id: string,
     updateDto: UpdateCourseModuleDto,
     userId: string,
-  ): Promise<CourseModule> {
+  ): Promise<CourseModuleEntity> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid module id');
     }
@@ -127,12 +124,6 @@ export class CourseModulesService {
 
     if (!course.instructorId.equals(userId)) {
       throw new ForbiddenException('You do not own this course');
-    }
-
-    if (updateDto.type || updateDto.metadata) {
-      const type = updateDto.type || module.type;
-      const metadata = updateDto.metadata || module.metadata;
-      this.validateMetadata(type, metadata);
     }
 
     Object.assign(module, updateDto);
@@ -159,30 +150,6 @@ export class CourseModulesService {
 
     if (bulkOps.length > 0) {
       await this.courseModuleModel.bulkWrite(bulkOps);
-    }
-  }
-
-  private validateMetadata(type: ModuleContentType, metadata: any) {
-    if (!metadata) return;
-
-    if (type === ModuleContentType.VIDEO) {
-      if (
-        metadata.duration !== undefined &&
-        typeof metadata.duration !== 'number'
-      ) {
-        throw new BadRequestException(
-          'Video metadata duration must be a number',
-        );
-      }
-    } else if (type === ModuleContentType.PDF) {
-      if (
-        metadata.pageCount !== undefined &&
-        typeof metadata.pageCount !== 'number'
-      ) {
-        throw new BadRequestException(
-          'PDF metadata pageCount must be a number',
-        );
-      }
     }
   }
 

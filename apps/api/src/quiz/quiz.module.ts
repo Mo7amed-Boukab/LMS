@@ -6,7 +6,7 @@ import { QuizSchema } from './schema/quiz.schema';
 import { QuizQuestionsService } from './services/quiz-questions.service';
 import { QuizQuestionsController } from './controllers/quiz-questions.controller';
 import {
-  CourseModule,
+  Module as CourseModuleEntity,
   CourseModuleSchema,
 } from 'src/course-modules/schemas/course-module.schema';
 
@@ -14,7 +14,7 @@ import {
   imports: [
     MongooseModule.forFeature([
       { name: 'Quiz', schema: QuizSchema },
-      { name: CourseModule.name, schema: CourseModuleSchema },
+      { name: CourseModuleEntity.name, schema: CourseModuleSchema },
     ]),
   ],
   controllers: [QuizController, QuizQuestionsController],
