@@ -1,0 +1,1515 @@
+{
+    "info": {
+        "_postman_id": "lms-api-collection-2026",
+        "name": "LMS API - Complete Collection",
+        "description": "Collection complète pour l'API LMS avec authentification, cours, modules, lessons, quiz et gestion utilisateurs",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set('userId', pm.response.json()._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"teacher@lms.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"formateur\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Register a new user (student, formateur, or admin)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200 || pm.response.code === 201) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.environment.set('accessToken', jsonData.accessToken);",
+                                    "    pm.environment.set('userId', jsonData.user._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"teacher@lms.com\",\n  \"password\": \"Password123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Login and receive JWT token"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/auth/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "profile"
+                            ]
+                        },
+                        "description": "Get current user profile (requires authentication)"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Authentication endpoints for login, register, and profile"
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Update User Role (Admin)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"role\": \"formateur\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/users/:userId/role",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "users",
+                                ":userId",
+                                "role"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "userId",
+                                    "value": "{{userId}}"
+                                }
+                            ]
+                        },
+                        "description": "Update user role (Admin only)"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "User management endpoints"
+        },
+        {
+            "name": "Courses",
+            "item": [
+                {
+                    "name": "Create Course",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set('courseId', pm.response.json()._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Complete UX Design Masterclass\",\n  \"description\": \"Master the art of User Experience Design with hands-on projects and real-world examples\",\n  \"category\": \"Design\",\n  \"level\": \"Beginner\",\n  \"thumbnail\": \"https://images.unsplash.com/photo-1561070791-2526d30994b5\",\n  \"promotionalVideo\": \"https://youtube.com/watch?v=example\",\n  \"price\": 49.99,\n  \"isPublicVisible\": true,\n  \"hasCertificate\": true,\n  \"status\": \"draft\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        },
+                        "description": "Create a new course (Formateur only)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Courses",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses"
+                            ]
+                        },
+                        "description": "Get all courses of the authenticated instructor"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Course by ID",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/:courseId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                ":courseId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "courseId",
+                                    "value": "{{courseId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get a specific course by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Course",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Updated UX Design Masterclass\",\n  \"price\": 59.99,\n  \"status\": \"published\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/:courseId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                ":courseId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "courseId",
+                                    "value": "{{courseId}}"
+                                }
+                            ]
+                        },
+                        "description": "Update course details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Course",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/courses/:courseId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "courses",
+                                ":courseId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "courseId",
+                                    "value": "{{courseId}}"
+                                }
+                            ]
+                        },
+                        "description": "Delete a course"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Course management endpoints"
+        },
+        {
+            "name": "Course Modules (Sections)",
+            "item": [
+                {
+                    "name": "Create Module",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set('moduleId', pm.response.json()._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Introduction to UX Design\",\n  \"courseId\": \"{{courseId}}\",\n  \"order\": 1,\n  \"isActive\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-modules",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-modules"
+                            ]
+                        },
+                        "description": "Create a new course module/section"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Modules by Course",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/course-modules/course/:courseId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-modules",
+                                "course",
+                                ":courseId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "courseId",
+                                    "value": "{{courseId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get all modules for a specific course"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Module by ID",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/course-modules/:moduleId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-modules",
+                                ":moduleId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "moduleId",
+                                    "value": "{{moduleId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get a specific module by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Module",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Updated Introduction to UX Design\",\n  \"isActive\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-modules/:moduleId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-modules",
+                                ":moduleId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "moduleId",
+                                    "value": "{{moduleId}}"
+                                }
+                            ]
+                        },
+                        "description": "Update module details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reorder Modules",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\"moduleId1\", \"moduleId2\", \"moduleId3\"]"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-modules/course/:courseId/reorder",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-modules",
+                                "course",
+                                ":courseId",
+                                "reorder"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "courseId",
+                                    "value": "{{courseId}}"
+                                }
+                            ]
+                        },
+                        "description": "Reorder modules in a course"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Module",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/course-modules/:moduleId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-modules",
+                                ":moduleId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "moduleId",
+                                    "value": "{{moduleId}}"
+                                }
+                            ]
+                        },
+                        "description": "Delete a module"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Course module/section management"
+        },
+        {
+            "name": "Course Lessons",
+            "item": [
+                {
+                    "name": "Create Lesson",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set('lessonId', pm.response.json()._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"What is UI vs UX?\",\n  \"moduleId\": \"{{moduleId}}\",\n  \"type\": \"VIDEO\",\n  \"contentUrl\": \"https://youtube.com/watch?v=example\",\n  \"order\": 1,\n  \"isPreview\": true,\n  \"isActive\": true,\n  \"metadata\": {\n    \"duration\": 300\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons"
+                            ]
+                        },
+                        "description": "Create a new lesson (VIDEO or PDF)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Lesson (PDF)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Course Resources\",\n  \"moduleId\": \"{{moduleId}}\",\n  \"type\": \"PDF\",\n  \"contentUrl\": \"https://storage.example.com/resources.pdf\",\n  \"order\": 3,\n  \"isPreview\": false,\n  \"isActive\": true,\n  \"metadata\": {\n    \"pageCount\": 50\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons"
+                            ]
+                        },
+                        "description": "Create a PDF lesson"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Lessons by Module",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons/module/:moduleId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons",
+                                "module",
+                                ":moduleId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "moduleId",
+                                    "value": "{{moduleId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get all lessons for a specific module"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Lesson by ID",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons/:lessonId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons",
+                                ":lessonId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "lessonId",
+                                    "value": "{{lessonId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get a specific lesson by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Lesson",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Updated Lesson Title\",\n  \"isPreview\": false,\n  \"metadata\": {\n    \"duration\": 450\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons/:lessonId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons",
+                                ":lessonId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "lessonId",
+                                    "value": "{{lessonId}}"
+                                }
+                            ]
+                        },
+                        "description": "Update lesson details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reorder Lessons",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\"lessonId1\", \"lessonId2\", \"lessonId3\"]"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons/module/:moduleId/reorder",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons",
+                                "module",
+                                ":moduleId",
+                                "reorder"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "moduleId",
+                                    "value": "{{moduleId}}"
+                                }
+                            ]
+                        },
+                        "description": "Reorder lessons in a module"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Lesson",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/course-lessons/:lessonId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "course-lessons",
+                                ":lessonId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "lessonId",
+                                    "value": "{{lessonId}}"
+                                }
+                            ]
+                        },
+                        "description": "Delete a lesson"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Course lesson management (videos and PDFs)"
+        },
+        {
+            "name": "Quizzes",
+            "item": [
+                {
+                    "name": "Create Quiz",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set('quizId', pm.response.json()._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"UX Design Fundamentals Quiz\",\n  \"description\": \"Test your knowledge of UX design basics\",\n  \"duration\": 30\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes"
+                            ]
+                        },
+                        "description": "Create a new quiz"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Quizzes",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes"
+                            ]
+                        },
+                        "description": "Get all quizzes"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Quiz by ID",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get a specific quiz by ID"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Quiz",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"title\": \"Updated Quiz Title\",\n  \"duration\": 45\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                }
+                            ]
+                        },
+                        "description": "Update quiz details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Publish Quiz",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId/publish",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId",
+                                "publish"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                }
+                            ]
+                        },
+                        "description": "Publish a quiz"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Quiz",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                }
+                            ]
+                        },
+                        "description": "Delete a quiz"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Quiz management endpoints"
+        },
+        {
+            "name": "Quiz Questions",
+            "item": [
+                {
+                    "name": "Add Question to Quiz",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set('questionId', pm.response.json()._id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"text\": \"What does UX stand for?\",\n  \"type\": \"multiple_choice\",\n  \"options\": [\n    \"User Experience\",\n    \"User Exchange\",\n    \"Unique Experience\",\n    \"Universal Exchange\"\n  ],\n  \"correctAnswer\": \"User Experience\",\n  \"points\": 10\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId/questions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId",
+                                "questions"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                }
+                            ]
+                        },
+                        "description": "Add a question to a quiz"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get All Questions",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId/questions",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId",
+                                "questions"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get all questions for a quiz"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Question by ID",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId/questions/:questionId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId",
+                                "questions",
+                                ":questionId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                },
+                                {
+                                    "key": "questionId",
+                                    "value": "{{questionId}}"
+                                }
+                            ]
+                        },
+                        "description": "Get a specific question"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Question",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"text\": \"Updated: What does UX stand for?\",\n  \"points\": 15\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId/questions/:questionId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId",
+                                "questions",
+                                ":questionId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                },
+                                {
+                                    "key": "questionId",
+                                    "value": "{{questionId}}"
+                                }
+                            ]
+                        },
+                        "description": "Update a question"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Question",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/quizzes/:quizId/questions/:questionId",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "quizzes",
+                                ":quizId",
+                                "questions",
+                                ":questionId"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "quizId",
+                                    "value": "{{quizId}}"
+                                },
+                                {
+                                    "key": "questionId",
+                                    "value": "{{questionId}}"
+                                }
+                            ]
+                        },
+                        "description": "Delete a question"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "Quiz question management"
+        },
+        {
+            "name": "Uploads",
+            "item": [
+                {
+                    "name": "Upload Video",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/uploads/video",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "uploads",
+                                "video"
+                            ]
+                        },
+                        "description": "Upload a video file (mp4, avi, mov, mkv, webm)"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Upload PDF",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/uploads/pdf",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "uploads",
+                                "pdf"
+                            ]
+                        },
+                        "description": "Upload a PDF file"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Upload Image (Thumbnail)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{accessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/uploads/image",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "uploads",
+                                "image"
+                            ]
+                        },
+                        "description": "Upload an image file (jpg, png, gif, webp)"
+                    },
+                    "response": []
+                }
+            ],
+            "description": "File upload endpoints"
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        }
+    ]
+}
