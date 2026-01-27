@@ -23,7 +23,10 @@ export interface Question {
 
 export interface Quiz {
   _id: string;
-  moduleId: string;
+   moduleId: {
+    _id: string;
+    title: string;
+  };
   title: string;
   passingScore: number;
   status: QuizStatus;
@@ -38,8 +41,14 @@ export interface CreateQuizDto {
   passingScore: number;
 }
 
-// export interface CreateQuestionDto {
-//   text: string;
-//   type: QuestionType;
-//   options: Omit<Option, '_id'>[];
-// }
+export interface CreateQuestionDto {
+  text: string;
+  type: QuestionType;
+  options: Omit<Option, '_id'>[];
+}
+
+export interface UpdateQuestionDto {
+  text?: string;
+  type?: QuestionType;
+  options?: Omit<Option, '_id'>[];
+}

@@ -46,7 +46,7 @@ export class QuizService {
   }
 
   async findAll(): Promise<Quiz[]> {
-    return this.quizModel.find().exec();
+    return this.quizModel.find().populate('moduleId', 'title').exec();
   }
 
   async findQuizById(id: string): Promise<Quiz> {

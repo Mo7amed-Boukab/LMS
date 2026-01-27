@@ -5,7 +5,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { QuizSchema } from './schema/quiz.schema';
 import { QuizQuestionsService } from './services/quiz-questions.service';
 import { QuizQuestionsController } from './controllers/quiz-questions.controller';
-import { CourseSchema } from 'src/courses/schemas/course.schema';
 import {
   Module as CourseModuleEntity,
   CourseModuleSchema,

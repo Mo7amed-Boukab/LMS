@@ -35,7 +35,7 @@ const QuizForm: React.FC = () => {
     try {
       setLoading(true);
       const quiz = await quizApi.create(formData);
-      router.push(`/admin/quizzes`);
+      router.push(`/teacher/quizzes`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -63,7 +63,7 @@ const QuizForm: React.FC = () => {
               setFormData({ ...formData, title: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Ex: Quiz JavaScript Niveau 1"
+            placeholder="Ex: Quiz JavaScript"
             required
             disabled={loading}
           />
@@ -71,7 +71,7 @@ const QuizForm: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            ID du Module *
+            Le titre du Module *
           </label>
           <input
             type="text"
@@ -80,13 +80,10 @@ const QuizForm: React.FC = () => {
               setFormData({ ...formData, moduleId: e.target.value })
             }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Ex: 507f1f77bcf86cd799439011"
+            placeholder="Nestjs"
             required
             disabled={loading}
           />
-          <p className="mt-1 text-sm text-gray-500">
-            L'identifiant MongoDB du module
-          </p>
         </div>
 
         <div>

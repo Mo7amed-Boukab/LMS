@@ -6,7 +6,7 @@ export default function CreateQuizPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Link
-        href="/quizzes"
+        href="/teacher/quizzes"
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 inline-flex"
       >
         <ArrowLeft size={20} />
