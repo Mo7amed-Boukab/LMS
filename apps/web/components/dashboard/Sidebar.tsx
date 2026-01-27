@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
 import {
     LayoutDashboard,
     BookOpen,
@@ -33,6 +34,9 @@ const settingsLinks: NavItem[] = [
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const { user, logout } = useAuth();
+    const displayName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Instructor';
+    const displayEmail = user?.email || 'instructor@ed-academy.com';
 
     return (
         <aside className="w-64 bg-black h-full flex flex-col flex-shrink-0 text-white z-20">
@@ -63,8 +67,8 @@ export default function Sidebar() {
                             key={link.href}
                             href={link.href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${isActive
-                                    ? "bg-red-700 text-white"
-                                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                                ? "bg-red-700 text-white"
+                                : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
                                 }`}
                         >
                             <Icon size={18} className={isActive ? "text-white" : "text-zinc-500"} />
@@ -86,8 +90,8 @@ export default function Sidebar() {
                             key={link.href}
                             href={link.href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${isActive
-                                    ? "bg-red-700 text-white"
-                                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                                ? "bg-red-700 text-white"
+                                : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
                                 }`}
                         >
                             <Icon size={18} className="text-zinc-500" />
@@ -97,7 +101,10 @@ export default function Sidebar() {
                 })}
 
                 {/* Logout Button */}
-                <button className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all mt-1">
+                <button
+                    onClick={logout}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all mt-1"
+                >
                     <LogOut size={18} className="text-zinc-500" />
                     <span>Logout</span>
                 </button>
@@ -105,13 +112,13 @@ export default function Sidebar() {
 
             {/* User Profile (Bottom) */}
             <div className="p-4 border-t border-zinc-800">
-                <div className="flex items-center gap-3 p-2 rounded-md cursor-pointer">
-                    <div
-                        className="bg-zinc-700 rounded-full h-10 w-10 overflow-hidden bg-cover bg-center ring-2 ring-rose-600"
-                    ></div>
+                <div className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-zinc-900 transition-colors">
+                    <div className="bg-zinc-700 rounded-full h-10 w-10 overflow-hidden flex items-center justify-center ring-2 ring-red-700 text-white font-bold uppercase">
+                        {user?.firstName?.[0] || 'U'}
+                    </div>
                     <div className="flex flex-col overflow-hidden flex-1">
-                        <p className="text-sm font-semibold text-white truncate">Prof. Mohamed</p>
-                        <p className="text-xs text-zinc-500 truncate">mohamedboukab@gmail.com</p>
+                        <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+                        <p className="text-xs text-zinc-500 truncate">{displayEmail}</p>
                     </div>
                 </div>
             </div>

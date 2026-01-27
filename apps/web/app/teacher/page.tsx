@@ -1,15 +1,18 @@
 "use client";
 
 import { BookOpen, Users, FileQuestion, DollarSign } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import StatCard from "@/components/dashboard/StatCard";
 import RecentCourses from "@/components/dashboard/RecentCourses";
 
 export default function TeacherDashboard() {
+  const { user } = useAuth();
+
   return (
     <>
       <DashboardHeader
-        title="Welcome back, Mohamed"
+        title={`Welcome back, ${user?.firstName || 'Teacher'}`}
         description="Here's what's happening with your courses today."
       />
 
