@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CourseModule } from './course-modules/schemas/course-module.schema';
 import { CommonModule } from './common/common.module';
+import { QuizAttempModule } from './quiz-attempt/quiz-attempt.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CommonModule } from './common/common.module';
     QuizModule,
     CourseModule,
     CommonModule,
+    QuizAttempModule,
   ],
 })
 export class AppModule {}
