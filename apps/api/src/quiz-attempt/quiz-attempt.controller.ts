@@ -62,7 +62,7 @@ export class QuizAttemptController {
     return this.quizAttemptService.getAttemptHistory(studentId, quizId);
   }
 
-  // Stats formateur
+  // Statistique formateur
   @Get('quiz/:quizId/statistics')
   @Roles(Role.Formateur)
   getStatistics(@Param('quizId') quizId: string) {
