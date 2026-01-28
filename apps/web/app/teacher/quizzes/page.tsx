@@ -1,15 +1,14 @@
 import React from "react";
 import Link from "next/link";
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 import QuizTable from "@/components/quiz/QuizTable";
 import { quizApi } from "@/lib/services/quizService";
 import { Quiz } from "@/lib/types/quiz";
 
-
 const QuizzesPage: React.FC = async () => {
   let quizzes: Quiz[] = [];
   let error = null;
-    try {
+  try {
     quizzes = await quizApi.getAll();
   } catch (err: any) {
     error = err.message;

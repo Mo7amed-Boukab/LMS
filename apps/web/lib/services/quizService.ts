@@ -12,21 +12,27 @@ export const quizApi = {
   },
 
   getById: async (id: string): Promise<Quiz> => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}`, {
-      next: { revalidate: 0 },
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}`,
+      {
+        next: { revalidate: 0 },
+        cache: "no-store",
+      }
+    );
     if (!res.ok) throw new Error("Quiz non trouvé");
-    
+
     return res.json();
   },
 
   update: async (id: string): Promise<Quiz> => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}/questions/${id}`, {
-      next: { revalidate: 0},
-      cache: "no-store",
-    });
-    if(!res.ok) throw new Error("Quiz non trouvée");
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}/questions/${id}`,
+      {
+        next: { revalidate: 0 },
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) throw new Error("Quiz non trouvée");
     return res.json();
   },
 
@@ -48,7 +54,7 @@ export const quizApi = {
       `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}`,
       {
         method: "DELETE",
-      },
+      }
     );
     if (!res.ok) throw new Error("Erreur lors de la suppression");
   },
@@ -58,7 +64,7 @@ export const quizApi = {
       `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}/publish`,
       {
         method: "PATCH",
-      },
+      }
     );
     if (!res.ok) {
       const error = await res.json();

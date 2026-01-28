@@ -12,7 +12,7 @@ export default function TeacherDashboard() {
   return (
     <>
       <DashboardHeader
-        title={`Welcome back, ${user?.firstName || 'Teacher'}`}
+        title={`Welcome back, ${user?.firstName || "Teacher"}`}
         description="Here's what's happening with your courses today."
       />
 

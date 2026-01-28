@@ -331,7 +331,7 @@ export default function CoursesPage() {
                                   key={i}
                                   className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white"
                                 ></div>
-                              ),
+                              )
                             )}
                           </div>
                           <span className="text-xs text-gray-500">

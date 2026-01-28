@@ -140,6 +140,6 @@ const QuizForm: React.FC = () => {
       </form>
     </>
   );
-}
+};
 
 export default QuizForm;

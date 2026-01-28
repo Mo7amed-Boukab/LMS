@@ -152,7 +152,7 @@ export class QuizAttemptService {
     }
 
     const quiz = await this.quizModel.findById(attempt.quizId).lean();
-    
+
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }

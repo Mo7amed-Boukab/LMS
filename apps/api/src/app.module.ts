@@ -36,4 +36,4 @@ import { UploadsModule } from './uploads/uploads.module';
     QuizAttempModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

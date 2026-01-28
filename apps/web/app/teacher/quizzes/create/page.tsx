@@ -1,6 +1,6 @@
-import QuizForm from '@/components/quiz/QuizForm';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import QuizForm from "@/components/quiz/QuizForm";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function CreateQuizPage() {
   return (

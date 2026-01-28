@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Question, CreateQuestionDto, QuestionType } from '@/lib/types/quiz';
-import { X } from 'lucide-react';
-import { questionApi } from '@/lib/services/questionService';
+import { useState } from "react";
+import { Question, CreateQuestionDto, QuestionType } from "@/lib/types/quiz";
+import { X } from "lucide-react";
+import { questionApi } from "@/lib/services/questionService";
 
 interface QuestionFormProps {
   quizId: string;
@@ -12,36 +12,39 @@ interface QuestionFormProps {
   onCancel: () => void;
 }
 
-const QuestionForm: React.FC<QuestionFormProps> =({
+const QuestionForm: React.FC<QuestionFormProps> = ({
   quizId,
   question,
   onSuccess,
   onCancel,
-}: QuestionFormProps)=>{
+}: QuestionFormProps) => {
   const isEditing = !!question;
-  
+
   const [formData, setFormData] = useState<CreateQuestionDto>({
-    text: question?.text || '',
+    text: question?.text || "",
     type: question?.type || QuestionType.QCM,
-    options: question?.options.map(o => ({ text: o.text, isCorrect: o.isCorrect })) || [
-      { text: '', isCorrect: false },
-      { text: '', isCorrect: false },
+    options: question?.options.map((o) => ({
+      text: o.text,
+      isCorrect: o.isCorrect,
+    })) || [
+      { text: "", isCorrect: false },
+      { text: "", isCorrect: false },
     ],
   });
-  
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAddOption = () => {
     setFormData({
       ...formData,
-      options: [...formData.options, { text: '', isCorrect: false }],
+      options: [...formData.options, { text: "", isCorrect: false }],
     });
   };
 
   const handleRemoveOption = (index: number) => {
     if (formData.options.length <= 2) {
-      setError('Au moins 2 options sont requises');
+      setError("Au moins 2 options sont requises");
       return;
     }
     setFormData({
@@ -50,7 +53,11 @@ const QuestionForm: React.FC<QuestionFormProps> =({
     });
   };
 
-  const handleOptionChange = (index: number, field: 'text' | 'isCorrect', value: any) => {
+  const handleOptionChange = (
+    index: number,
+    field: "text" | "isCorrect",
+    value: any
+  ) => {
     const newOptions = [...formData.options];
     newOptions[index] = { ...newOptions[index], [field]: value };
     setFormData({ ...formData, options: newOptions });
@@ -62,22 +69,22 @@ const QuestionForm: React.FC<QuestionFormProps> =({
 
     // Validations
     if (!formData.text.trim()) {
-      setError('Le texte de la question est requis');
+      setError("Le texte de la question est requis");
       return;
     }
 
     if (formData.options.length < 2) {
-      setError('Au moins 2 options sont requises');
+      setError("Au moins 2 options sont requises");
       return;
     }
 
-    if (!formData.options.some(o => o.isCorrect)) {
-      setError('Au moins une option doit être marquée comme correcte');
+    if (!formData.options.some((o) => o.isCorrect)) {
+      setError("Au moins une option doit être marquée comme correcte");
       return;
     }
 
-    if (formData.options.some(o => !o.text.trim())) {
-      setError('Toutes les options doivent avoir un texte');
+    if (formData.options.some((o) => !o.text.trim())) {
+      setError("Toutes les options doivent avoir un texte");
       return;
     }
 
@@ -97,12 +104,12 @@ const QuestionForm: React.FC<QuestionFormProps> =({
   };
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
+    <form
+      onSubmit={handleSubmit}
       className="border border-gray-300 rounded-lg p-6 mb-6 bg-gray-50"
     >
       <h3 className="text-lg font-semibold mb-4">
-        {isEditing ? 'Modifier la question' : 'Nouvelle question'}
+        {isEditing ? "Modifier la question" : "Nouvelle question"}
       </h3>
 
       {error && (
@@ -135,7 +142,9 @@ const QuestionForm: React.FC<QuestionFormProps> =({
           </label>
           <select
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value as QuestionType })}
+            onChange={(e) =>
+              setFormData({ ...formData, type: e.target.value as QuestionType })
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={submitting}
           >
@@ -166,24 +175,30 @@ const QuestionForm: React.FC<QuestionFormProps> =({
                 <input
                   type="text"
                   value={option.text}
-                  onChange={(e) => handleOptionChange(index, 'text', e.target.value)}
+                  onChange={(e) =>
+                    handleOptionChange(index, "text", e.target.value)
+                  }
                   placeholder={`Option ${index + 1}`}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                   disabled={submitting}
                 />
-                
+
                 <label className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition">
                   <input
                     type="checkbox"
                     checked={option.isCorrect}
-                    onChange={(e) => handleOptionChange(index, 'isCorrect', e.target.checked)}
+                    onChange={(e) =>
+                      handleOptionChange(index, "isCorrect", e.target.checked)
+                    }
                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                     disabled={submitting}
                   />
-                  <span className="text-sm font-medium text-gray-700">Correcte</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Correcte
+                  </span>
                 </label>
-                
+
                 {formData.options.length > 2 && (
                   <button
                     type="button"
@@ -200,7 +215,8 @@ const QuestionForm: React.FC<QuestionFormProps> =({
           </div>
 
           <p className="mt-2 text-xs text-gray-500">
-            Cochez "Correcte" pour au moins une option. Plusieurs options peuvent être correctes.
+            Cochez "Correcte" pour au moins une option. Plusieurs options
+            peuvent être correctes.
           </p>
         </div>
       </div>
@@ -223,11 +239,15 @@ const QuestionForm: React.FC<QuestionFormProps> =({
           {submitting && (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           )}
-          {submitting ? 'Enregistrement...' : isEditing ? 'Mettre à jour' : 'Ajouter'}
+          {submitting
+            ? "Enregistrement..."
+            : isEditing
+              ? "Mettre à jour"
+              : "Ajouter"}
         </button>
       </div>
     </form>
   );
-}
+};
 
 export default QuestionForm;

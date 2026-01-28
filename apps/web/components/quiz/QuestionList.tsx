@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Question, QuizStatus } from '@/lib/types/quiz';
-import { Plus } from 'lucide-react';
-import { questionApi } from '@/lib/services/questionService';
-import QuestionCard from './QuestionCard';
-import QuestionForm from './QuestionForm';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Question, QuizStatus } from "@/lib/types/quiz";
+import { Plus } from "lucide-react";
+import { questionApi } from "@/lib/services/questionService";
+import QuestionCard from "./QuestionCard";
+import QuestionForm from "./QuestionForm";
 
 interface QuestionListProps {
   quizId: string;
@@ -14,10 +14,10 @@ interface QuestionListProps {
   quizStatus: QuizStatus;
 }
 
-export default function QuestionList({ 
-  quizId, 
+export default function QuestionList({
+  quizId,
   initialQuestions,
-  quizStatus 
+  quizStatus,
 }: QuestionListProps) {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>(initialQuestions);
@@ -25,11 +25,11 @@ export default function QuestionList({
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   const handleDeleteQuestion = async (questionId: string) => {
-    if (!confirm('Supprimer cette question ?')) return;
-    
+    if (!confirm("Supprimer cette question ?")) return;
+
     try {
       await questionApi.delete(quizId, questionId);
-      setQuestions(questions.filter(q => q._id !== questionId));
+      setQuestions(questions.filter((q) => q._id !== questionId));
       router.refresh();
     } catch (err: any) {
       alert(err.message);
@@ -53,9 +53,7 @@ export default function QuestionList({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">
-          Questions ({questions.length})
-        </h2>
+        <h2 className="text-xl font-bold">Questions ({questions.length})</h2>
         {!showAddForm && !editingQuestion && (
           <button
             onClick={() => setShowAddForm(true)}
@@ -69,7 +67,8 @@ export default function QuestionList({
 
       {questions.length < 4 && quizStatus === QuizStatus.DRAFT && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg text-sm">
-          Au moins 4 questions sont requises pour publier ce quiz. ({questions.length}/4)
+          Au moins 4 questions sont requises pour publier ce quiz. (
+          {questions.length}/4)
         </div>
       )}
 
@@ -98,7 +97,9 @@ export default function QuestionList({
           {questions.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
               <p className="text-gray-500 mb-4">Aucune question</p>
-              <p className="text-sm text-gray-400">Commencez par en ajouter une !</p>
+              <p className="text-sm text-gray-400">
+                Commencez par en ajouter une !
+              </p>
             </div>
           ) : (
             questions.map((question, index) => (
