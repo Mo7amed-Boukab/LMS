@@ -1,7 +1,12 @@
 database/
 .env
-.env.production
+.env.*
+.env.docker.dev
+.env.prod
 node_modules/
 dist/
 uploads/
+backups/
 
+.env.prod
+backups/

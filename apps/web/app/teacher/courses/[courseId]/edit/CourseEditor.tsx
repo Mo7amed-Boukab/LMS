@@ -131,7 +131,7 @@ export default function CourseEditor() {
         }
 
         if (confirm("Are you sure you want to publish this course? It will be visible to students.")) {
-            await updateCourse({ status: 'Published' });
+            await updateCourse({ status: 'published' });
             router.push('/teacher/courses');
         }
     };
@@ -188,7 +188,7 @@ export default function CourseEditor() {
                             onClick={handlePublish}
                             className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded font-medium text-sm transition-colors shadow-sm"
                         >
-                            <span>{course.status === 'Published' ? 'Update Course' : 'Publish Course'}</span>
+                            <span>{course.status === 'published' ? 'Update Course' : 'Publish Course'}</span>
                         </button>
                     </div>
                 </div>

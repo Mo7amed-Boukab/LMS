@@ -1,0 +1,62 @@
+# =====================================================
+# DOCKER COMPOSE - PRODUCTION avec MongoDB Atlas
+# =====================================================
+# Utilisation: docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
+
+services:
+  # ============ BACKEND API (NestJS) ============
+  api:
+    container_name: lms-api-prod
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.prod
+    image: lms-api:prod
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+      - PORT=4000
+      - API_URL=${API_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - lms-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============ FRONTEND (Next.js) ============
+  web:
+    container_name: lms-web-prod
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.prod
+    image: lms-web:prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    networks:
+      - lms-network
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: always
+
+# ============ VOLUMES ============
+volumes:
+  uploads_data:
+    driver: local
+
+# ============ NETWORKS ============
+networks:
+  lms-network:
+    driver: bridge
