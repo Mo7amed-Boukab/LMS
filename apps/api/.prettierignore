@@ -1,0 +1,21 @@
+# Prettier ignore patterns
+node_modules
+dist
+build
+.next
+coverage
+*.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Build outputs
+*.min.js
+*.min.css
+
+# Database
+database/
+*.wt
+*.bson
+
+# Logs
+*.log

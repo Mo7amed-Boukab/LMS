@@ -83,10 +83,11 @@ function CustomSelect({
                   onChange(option);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${value === option
-                  ? "text-red-700 font-medium bg-red-50"
-                  : "text-gray-600"
-                  }`}
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                  value === option
+                    ? "text-red-700 font-medium bg-red-50"
+                    : "text-gray-600"
+                }`}
               >
                 {option}
                 {value === option && <Check size={14} />}
@@ -99,11 +100,10 @@ function CustomSelect({
   );
 }
 
-
 interface LocalLesson {
   id: string | number;
   title: string;
-  type: 'VIDEO' | 'PDF';
+  type: "VIDEO" | "PDF";
   contentUrl?: string; // Add this
   isUploading?: boolean;
   fileName?: string;
@@ -141,24 +141,23 @@ export default function CreateCoursePage() {
     {
       id: 1,
       title: "Introduction",
-      lessons: [{ id: 1, title: "Welcome to the course", type: 'VIDEO' }],
+      lessons: [{ id: 1, title: "Welcome to the course", type: "VIDEO" }],
     },
   ]);
 
   // Helper to fix backend URLs if they have the wrong port
   const getMediaUrl = (url?: string) => {
     if (!url) return "";
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
     // If URL is absolute but points to port 3000 (backend default), swap it to correct API URL
-    if (url.startsWith('http://localhost:3000/')) {
-      return url.replace('http://localhost:3000', apiUrl);
+    if (url.startsWith("http://localhost:3000/")) {
+      return url.replace("http://localhost:3000", apiUrl);
     }
     // If it's already absolute or a full URL, return as is
-    if (url.startsWith('http')) return url;
+    if (url.startsWith("http")) return url;
     // Otherwise assume it's relative to API
-    return `${apiUrl}/${url.startsWith('/') ? url.slice(1) : url}`;
+    return `${apiUrl}/${url.startsWith("/") ? url.slice(1) : url}`;
   };
-
 
   const handleSave = async (asDraft = true) => {
     if (!title) {
@@ -184,13 +183,13 @@ export default function CreateCoursePage() {
         hasCertificate,
         thumbnail,
         promotionalVideo,
-        status: asDraft ? 'draft' : 'published'
+        status: asDraft ? "draft" : "published",
       } as const; // Only send valid fields
 
       if (!currentCourseId) {
         const newCourse = await teacherCourseService.createCourse({
           ...courseData,
-          status: asDraft ? 'draft' : 'published'
+          status: asDraft ? "draft" : "published",
         });
         currentCourseId = newCourse._id;
         setCourseId(newCourse._id);
@@ -202,7 +201,7 @@ export default function CreateCoursePage() {
       } else {
         await teacherCourseService.updateCourse(currentCourseId, {
           ...courseData,
-          status: asDraft ? 'draft' : 'published'
+          status: asDraft ? "draft" : "published",
         });
         if (asDraft) toast.success("Course saved");
       }
@@ -242,8 +241,8 @@ export default function CreateCoursePage() {
             const newLesson = await teacherCourseService.createLesson({
               moduleId: moduleId!,
               title: lesson.title,
-              type: lesson.type || 'VIDEO',
-              contentUrl: lesson.contentUrl || 'https://example.com', // Placeholder if empty
+              type: lesson.type || "VIDEO",
+              contentUrl: lesson.contentUrl || "https://example.com", // Placeholder if empty
               order: j + 1,
               isActive: true,
               isPreview: lesson.isPreview || false,
@@ -266,9 +265,8 @@ export default function CreateCoursePage() {
 
       if (!asDraft) {
         toast.success("Course published successfully!");
-        router.push('/teacher/courses');
+        router.push("/teacher/courses");
       }
-
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "Failed to save course");
@@ -284,7 +282,7 @@ export default function CreateCoursePage() {
     const toastId = toast.loading("Uploading thumbnail...");
     setIsThumbnailUploading(true);
     try {
-      const result = await teacherCourseService.uploadFile(file, 'image');
+      const result = await teacherCourseService.uploadFile(file, "image");
       setThumbnail(result.url);
       toast.success("Thumbnail uploaded", { id: toastId });
     } catch (error) {
@@ -293,7 +291,6 @@ export default function CreateCoursePage() {
       setIsThumbnailUploading(false);
     }
   };
-
 
   const addSection = () => {
     setSections([
@@ -310,17 +307,20 @@ export default function CreateCoursePage() {
             ...section,
             lessons: [
               ...section.lessons,
-              { id: Date.now(), title: "New Lesson", type: 'VIDEO' },
+              { id: Date.now(), title: "New Lesson", type: "VIDEO" },
             ],
           };
         }
         return section;
-      }),
+      })
     );
   };
 
-
-  const handleLessonUpload = async (e: React.ChangeEvent<HTMLInputElement>, sectionIndex: number, lessonIndex: number) => {
+  const handleLessonUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    sectionIndex: number,
+    lessonIndex: number
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -335,15 +335,15 @@ export default function CreateCoursePage() {
 
     try {
       // Determine upload type based on lesson type
-      const uploadType = lesson.type === 'PDF' ? 'pdf' : 'video';
+      const uploadType = lesson.type === "PDF" ? "pdf" : "video";
       const result = await teacherCourseService.uploadFile(file, uploadType);
 
       // Simulate getting video duration if it's a video
       let duration = 0;
-      if (uploadType === 'video') {
+      if (uploadType === "video") {
         // Create a temporary video element to get duration
-        const video = document.createElement('video');
-        video.preload = 'metadata';
+        const video = document.createElement("video");
+        video.preload = "metadata";
         video.src = URL.createObjectURL(file);
 
         await new Promise<void>((resolve) => {
@@ -351,7 +351,7 @@ export default function CreateCoursePage() {
             duration = video.duration;
             URL.revokeObjectURL(video.src);
             resolve();
-          }
+          };
           video.onerror = () => resolve(); // fallback
         });
       }
@@ -359,9 +359,11 @@ export default function CreateCoursePage() {
       // Update lesson with URL and filename
       const finalSections = [...sections];
       finalSections[sectionIndex].lessons[lessonIndex].contentUrl = result.url;
-      finalSections[sectionIndex].lessons[lessonIndex].fileName = result.originalName;
+      finalSections[sectionIndex].lessons[lessonIndex].fileName =
+        result.originalName;
       finalSections[sectionIndex].lessons[lessonIndex].isUploading = false;
-      if (duration > 0) finalSections[sectionIndex].lessons[lessonIndex].duration = duration;
+      if (duration > 0)
+        finalSections[sectionIndex].lessons[lessonIndex].duration = duration;
 
       setSections(finalSections);
 
@@ -373,7 +375,6 @@ export default function CreateCoursePage() {
       toast.error("Upload failed", { id: toastId });
     }
   };
-
 
   return (
     <>
@@ -403,7 +404,11 @@ export default function CreateCoursePage() {
               disabled={isSaving}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              {isSaving ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
               Save Draft
             </button>
             <button
@@ -422,40 +427,44 @@ export default function CreateCoursePage() {
             <nav className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
               <button
                 onClick={() => setActiveTab("basic")}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${activeTab === "basic"
-                  ? "bg-red-50 text-red-700"
-                  : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${
+                  activeTab === "basic"
+                    ? "bg-red-50 text-red-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 <Layout size={18} />
                 Basic Information
               </button>
               <button
                 onClick={() => setActiveTab("curriculum")}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${activeTab === "curriculum"
-                  ? "bg-red-50 text-red-700"
-                  : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${
+                  activeTab === "curriculum"
+                    ? "bg-red-50 text-red-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 <List size={18} />
                 Curriculum
               </button>
               <button
                 onClick={() => setActiveTab("media")}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${activeTab === "media"
-                  ? "bg-red-50 text-red-700"
-                  : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${
+                  activeTab === "media"
+                    ? "bg-red-50 text-red-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 <ImageIcon size={18} />
                 Media
               </button>
               <button
                 onClick={() => setActiveTab("settings")}
-                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${activeTab === "settings"
-                  ? "bg-red-50 text-red-700"
-                  : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded whitespace-nowrap transition-colors w-full text-left ${
+                  activeTab === "settings"
+                    ? "bg-red-50 text-red-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 <Settings size={18} />
                 Settings
@@ -588,14 +597,18 @@ export default function CreateCoursePage() {
                             onClick={async () => {
                               if (section._id) {
                                 try {
-                                  await teacherCourseService.deleteModule(section._id);
+                                  await teacherCourseService.deleteModule(
+                                    section._id
+                                  );
                                   toast.success("Section deleted");
                                 } catch (error) {
                                   toast.error("Failed to delete section");
                                   return;
                                 }
                               }
-                              const newSections = sections.filter((_, i) => i !== index);
+                              const newSections = sections.filter(
+                                (_, i) => i !== index
+                              );
                               setSections(newSections);
                             }}
                             className="text-gray-400 hover:text-red-600 p-2 rounded hover:bg-red-50 transition-colors"
@@ -623,7 +636,8 @@ export default function CreateCoursePage() {
                                   value={lesson.title}
                                   onChange={(e) => {
                                     const newSections = [...sections];
-                                    newSections[index].lessons[lIndex].title = e.target.value;
+                                    newSections[index].lessons[lIndex].title =
+                                      e.target.value;
                                     setSections(newSections);
                                   }}
                                   placeholder="Enter lesson title"
@@ -634,15 +648,21 @@ export default function CreateCoursePage() {
                                     onClick={async () => {
                                       if (lesson._id) {
                                         try {
-                                          await teacherCourseService.deleteLesson(lesson._id);
+                                          await teacherCourseService.deleteLesson(
+                                            lesson._id
+                                          );
                                           toast.success("Lesson deleted");
                                         } catch (error) {
-                                          toast.error("Failed to delete lesson");
+                                          toast.error(
+                                            "Failed to delete lesson"
+                                          );
                                           return;
                                         }
                                       }
                                       const newSections = [...sections];
-                                      newSections[index].lessons = newSections[index].lessons.filter((_, i) => i !== lIndex);
+                                      newSections[index].lessons = newSections[
+                                        index
+                                      ].lessons.filter((_, i) => i !== lIndex);
                                       setSections(newSections);
                                     }}
                                     className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50"
@@ -663,26 +683,32 @@ export default function CreateCoursePage() {
                                     <button
                                       onClick={() => {
                                         const newSections = [...sections];
-                                        newSections[index].lessons[lIndex].type = 'VIDEO';
+                                        newSections[index].lessons[
+                                          lIndex
+                                        ].type = "VIDEO";
                                         setSections(newSections);
                                       }}
-                                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded border transition-all ${lesson.type === 'VIDEO'
-                                        ? 'bg-red-50 border-red-200 text-red-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        }`}
+                                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded border transition-all ${
+                                        lesson.type === "VIDEO"
+                                          ? "bg-red-50 border-red-200 text-red-700"
+                                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                                      }`}
                                     >
                                       <Video size={14} /> Video
                                     </button>
                                     <button
                                       onClick={() => {
                                         const newSections = [...sections];
-                                        newSections[index].lessons[lIndex].type = 'PDF';
+                                        newSections[index].lessons[
+                                          lIndex
+                                        ].type = "PDF";
                                         setSections(newSections);
                                       }}
-                                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded border transition-all ${lesson.type === 'PDF'
-                                        ? 'bg-red-50 border-red-200 text-red-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        }`}
+                                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded border transition-all ${
+                                        lesson.type === "PDF"
+                                          ? "bg-red-50 border-red-200 text-red-700"
+                                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                                      }`}
                                     >
                                       <FileText size={14} /> PDF
                                     </button>
@@ -695,7 +721,9 @@ export default function CreateCoursePage() {
                                         checked={lesson.isPreview || false}
                                         onChange={(e) => {
                                           const newSections = [...sections];
-                                          newSections[index].lessons[lIndex].isPreview = e.target.checked;
+                                          newSections[index].lessons[
+                                            lIndex
+                                          ].isPreview = e.target.checked;
                                           setSections(newSections);
                                         }}
                                         className="rounded border-gray-300 text-red-600 focus:ring-red-500 w-3.5 h-3.5"
@@ -708,27 +736,42 @@ export default function CreateCoursePage() {
                                 {/* File Upload / Info */}
                                 <div>
                                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
-                                    {lesson.type === 'VIDEO' ? 'Video Content' : 'PDF Document'}
+                                    {lesson.type === "VIDEO"
+                                      ? "Video Content"
+                                      : "PDF Document"}
                                   </label>
 
                                   {!lesson.contentUrl ? (
                                     <div className="relative">
                                       <input
                                         type="file"
-                                        accept={lesson.type === 'VIDEO' ? "video/*" : "application/pdf"}
-                                        onChange={(e) => handleLessonUpload(e, index, lIndex)}
+                                        accept={
+                                          lesson.type === "VIDEO"
+                                            ? "video/*"
+                                            : "application/pdf"
+                                        }
+                                        onChange={(e) =>
+                                          handleLessonUpload(e, index, lIndex)
+                                        }
                                         disabled={lesson.isUploading}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                                       />
                                       <div className="w-full border border-dashed border-gray-300 rounded bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-white hover:border-gray-400 transition-all py-2 px-3 flex items-center justify-center gap-2 text-xs cursor-pointer">
                                         {lesson.isUploading ? (
                                           <>
-                                            <Loader2 size={14} className="animate-spin" /> Uploading...
+                                            <Loader2
+                                              size={14}
+                                              className="animate-spin"
+                                            />{" "}
+                                            Uploading...
                                           </>
                                         ) : (
                                           <>
                                             <UploadCloud size={14} />
-                                            Upload {lesson.type === 'VIDEO' ? 'Video' : 'PDF'}
+                                            Upload{" "}
+                                            {lesson.type === "VIDEO"
+                                              ? "Video"
+                                              : "PDF"}
                                           </>
                                         )}
                                       </div>
@@ -736,26 +779,43 @@ export default function CreateCoursePage() {
                                   ) : (
                                     <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800">
                                       <div className="flex items-center gap-2 truncate">
-                                        <Check size={14} className="flex-shrink-0" />
+                                        <Check
+                                          size={14}
+                                          className="flex-shrink-0"
+                                        />
                                         <span className="truncate max-w-[150px]">
                                           {lesson.fileName || "File uploaded"}
                                         </span>
                                         {lesson.duration && (
-                                          <span className="text-green-600 text-[10px] ml-1">({Math.floor(lesson.duration / 60)}m {Math.floor(lesson.duration % 60)}s)</span>
+                                          <span className="text-green-600 text-[10px] ml-1">
+                                            ({Math.floor(lesson.duration / 60)}m{" "}
+                                            {Math.floor(lesson.duration % 60)}s)
+                                          </span>
                                         )}
                                       </div>
                                       <div className="flex items-center gap-1">
-                                        <a href={getMediaUrl(lesson.contentUrl)} target="_blank" rel="noreferrer" className="p-1 hover:bg-green-100 rounded text-green-700" title="View">
+                                        <a
+                                          href={getMediaUrl(lesson.contentUrl)}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="p-1 hover:bg-green-100 rounded text-green-700"
+                                          title="View"
+                                        >
                                           <Eye size={14} />
                                         </a>
                                         <button
                                           onClick={() => {
                                             const newSections = [...sections];
-                                            newSections[index].lessons[lIndex].contentUrl = undefined;
-                                            newSections[index].lessons[lIndex].fileName = undefined;
+                                            newSections[index].lessons[
+                                              lIndex
+                                            ].contentUrl = undefined;
+                                            newSections[index].lessons[
+                                              lIndex
+                                            ].fileName = undefined;
                                             setSections(newSections);
                                           }}
-                                          className="p-1 hover:bg-green-100 rounded text-green-700" title="Remove"
+                                          className="p-1 hover:bg-green-100 rounded text-green-700"
+                                          title="Remove"
                                         >
                                           <X size={14} />
                                         </button>
@@ -801,8 +861,13 @@ export default function CreateCoursePage() {
                           <div className="relative border-2 border-dashed border-gray-300 rounded p-10 flex flex-col items-center justify-center text-center hover:bg-gray-50 hover:border-gray-400 transition-all cursor-pointer">
                             {isThumbnailUploading ? (
                               <div className="flex flex-col items-center">
-                                <Loader2 size={32} className="text-red-600 animate-spin mb-4" />
-                                <p className="text-base font-medium text-gray-900">Uploading thumbnail...</p>
+                                <Loader2
+                                  size={32}
+                                  className="text-red-600 animate-spin mb-4"
+                                />
+                                <p className="text-base font-medium text-gray-900">
+                                  Uploading thumbnail...
+                                </p>
                               </div>
                             ) : (
                               <>
@@ -842,7 +907,10 @@ export default function CreateCoursePage() {
                               >
                                 <Trash2 size={20} />
                               </button>
-                              <label className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white cursor-pointer transition-all" title="Change">
+                              <label
+                                className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full text-white cursor-pointer transition-all"
+                                title="Change"
+                              >
                                 <Edit size={20} />
                                 <input
                                   type="file"
@@ -866,7 +934,9 @@ export default function CreateCoursePage() {
                           <input
                             type="text"
                             value={promotionalVideo}
-                            onChange={(e) => setPromotionalVideo(e.target.value)}
+                            onChange={(e) =>
+                              setPromotionalVideo(e.target.value)
+                            }
                             placeholder="Paste video URL (e.g. YouTube, Vimeo)"
                             className="flex-1 px-4 py-2.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none"
                           />
@@ -932,7 +1002,9 @@ export default function CreateCoursePage() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={isPublicVisible}
-                            onChange={(e) => setIsPublicVisible(e.target.checked)}
+                            onChange={(e) =>
+                              setIsPublicVisible(e.target.checked)
+                            }
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-700"></div>
                         </label>
@@ -953,7 +1025,9 @@ export default function CreateCoursePage() {
                             type="checkbox"
                             className="sr-only peer"
                             checked={hasCertificate}
-                            onChange={(e) => setHasCertificate(e.target.checked)}
+                            onChange={(e) =>
+                              setHasCertificate(e.target.checked)
+                            }
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-700"></div>
                         </label>

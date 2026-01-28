@@ -1,18 +1,18 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { notFound } from 'next/navigation';
-import { quizApi } from '@/lib/services/quizService';
-import QuestionList from '@/components/quiz/QuestionList';
-import { questionApi } from '@/lib/services/questionService';
-import QuizHeader from '@/components/quiz/QuizHeader';
-import { Question } from '@/lib/types/quiz';
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { notFound } from "next/navigation";
+import { quizApi } from "@/lib/services/quizService";
+import QuestionList from "@/components/quiz/QuestionList";
+import { questionApi } from "@/lib/services/questionService";
+import QuizHeader from "@/components/quiz/QuizHeader";
+import { Question } from "@/lib/types/quiz";
 
-export default async function QuizDetailPage({ 
-  params 
-}: { 
-  params: { quizId: string } 
+export default async function QuizDetailPage({
+  params,
+}: {
+  params: { quizId: string };
 }) {
-  const {quizId} = await params;
+  const { quizId } = await params;
   let quiz = null;
   let questions: Question[] = [];
   let error = null;
@@ -23,7 +23,7 @@ export default async function QuizDetailPage({
       questionApi.getAll(quizId),
     ]);
   } catch (err: any) {
-    if (err.message.includes('non trouvé')) {
+    if (err.message.includes("non trouvé")) {
       notFound();
     }
     error = err.message;
@@ -52,10 +52,10 @@ export default async function QuizDetailPage({
       </Link>
 
       <QuizHeader quiz={quiz} questionsCount={questions.length} />
-      
+
       <div className="mt-6">
-        <QuestionList 
-          quizId={quizId} 
+        <QuestionList
+          quizId={quizId}
           initialQuestions={questions}
           quizStatus={quiz.status}
         />
