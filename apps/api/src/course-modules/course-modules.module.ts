@@ -23,6 +23,6 @@ import { Course, CourseSchema } from 'src/courses/schemas/course.schema';
   ],
   controllers: [CourseModulesController],
   providers: [CourseModulesService],
-  exports: [CourseModulesService],
+  exports: [CourseModulesService, MongooseModule],
 })
 export class CourseModulesModule {}

@@ -9,14 +9,14 @@ import { Model, Types } from 'mongoose';
 import { Quiz } from 'src/quiz/schema/quiz.schema';
 import { QuizAttempt } from './schema/quiz-attempt.schema';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
-// import { ProgressService } from '../progress/progress.service';
+import { ProgressModuleService } from 'src/progress-module/progress-module.service';
 
 @Injectable()
 export class QuizAttemptService {
   constructor(
     @InjectModel(QuizAttempt.name) private quizAttemptModel: Model<QuizAttempt>,
     @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
-    // private progressService: ProgressService,
+    private progressService: ProgressModuleService,
   ) {}
 
   // start quiz (retourner les questions)
@@ -157,6 +157,9 @@ export class QuizAttemptService {
     }
 
     const quiz = await this.quizModel.findById(attempt.quizId).lean();
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
 
     const questionsMap = new Map(
       quiz.questions.map((q) => [q._id.toString(), q]),
@@ -231,6 +234,10 @@ export class QuizAttemptService {
     const quiz = await this.quizModel
       .findById(quizId)
       .select('title passingScore');
+
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
 
     const totalAttempts = attempts.length;
     const uniqueStudents = new Set(attempts.map((a) => a.studentId.toString()))
