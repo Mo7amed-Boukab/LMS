@@ -35,10 +35,10 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        { 
+        {
           argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_' 
-        }
+          varsIgnorePattern: '^_',
+        },
       ],
 
       // General
