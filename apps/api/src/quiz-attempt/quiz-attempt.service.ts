@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -26,17 +25,17 @@ export class QuizAttemptService {
       throw new NotFoundException('Quiz not found');
     }
 
-    // Vérifier l'accès au module
-    const hasAccess = await this.progressService.canAccessModule(
-      studentId,
-      quiz.moduleId.toString(),
-    );
+    // Vérifier l'accès au module - commented out for now
+    // const hasAccess = await this.progressService.canAccessModule(
+    //   studentId,
+    //   quiz.moduleId.toString(),
+    // );
 
-    if (!hasAccess) {
-      throw new ForbiddenException(
-        'You must complete the previous module to access this quiz',
-      );
-    }
+    // if (!hasAccess) {
+    //   throw new ForbiddenException(
+    //     'You must complete the previous module to access this quiz',
+    //   );
+    // }
 
     //Retourner les questions SANS les réponses correctes
     const questionsForStudent = quiz.questions.map((q) => ({
@@ -81,10 +80,6 @@ export class QuizAttemptService {
       quiz.questions.map((q) => [q._id.toString(), q]),
     );
 
-    const answersMap = new Map(
-      submitQuizDto.answers.map((a) => [a.questionId, a.selectedOptionId]),
-    );
-
     // Corriger les réponses
     const correctedAnswers = submitQuizDto.answers.map((answer) => {
       const question = questionsMap.get(answer.questionId);
@@ -124,13 +119,13 @@ export class QuizAttemptService {
       passed,
     });
 
-    // Si réussi : Débloquer le module suivant
-    if (passed) {
-      await this.progressService.completeModule(
-        studentId,
-        quiz.moduleId.toString(),
-      );
-    }
+    // Si réussi : Débloquer le module suivant - commented out for now
+    // if (passed) {
+    //   await this.progressService.completeModule(
+    //     studentId,
+    //     quiz.moduleId.toString(),
+    //   );
+    // }
 
     return {
       attemptId: attempt._id,
@@ -157,6 +152,10 @@ export class QuizAttemptService {
     }
 
     const quiz = await this.quizModel.findById(attempt.quizId).lean();
+    
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
 
     const questionsMap = new Map(
       quiz.questions.map((q) => [q._id.toString(), q]),
@@ -205,9 +204,13 @@ export class QuizAttemptService {
       .select('title passingScore')
       .lean();
 
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
+
     return {
-      quizTitle: quiz?.title,
-      passingScore: quiz?.passingScore,
+      quizTitle: quiz.title,
+      passingScore: quiz.passingScore,
       totalAttempts: attempts.length,
       bestScore:
         attempts.length > 0 ? Math.max(...attempts.map((a) => a.score)) : 0,
@@ -231,6 +234,10 @@ export class QuizAttemptService {
     const quiz = await this.quizModel
       .findById(quizId)
       .select('title passingScore');
+
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
 
     const totalAttempts = attempts.length;
     const uniqueStudents = new Set(attempts.map((a) => a.studentId.toString()))

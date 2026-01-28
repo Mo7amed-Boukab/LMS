@@ -1,0 +1,69 @@
+services:
+  api:
+    container_name: nest-js-app
+    build:
+      context: ./apps/api
+      dockerfile: ./Dockerfile
+      target: production
+    image: nest-api:latest
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/lms}
+      - PORT=${API_PORT:-4000}
+      - JWT_SECRET=${JWT_SECRET}
+      - NODE_ENV=production
+    networks:
+      - lms-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  web:
+    container_name: next-js-app
+    build:
+      context: ./apps/web
+      dockerfile: ./Dockerfile
+      target: production
+    image: next-web:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+      - NODE_ENV=production
+    networks:
+      - lms-network
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mongodb
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - lms-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  lms-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

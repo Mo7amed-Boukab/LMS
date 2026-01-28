@@ -3,7 +3,7 @@ services:
     container_name: nest-js-app
     build:
       context: ./apps/api
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     image: nest-api
     ports:
       - "4000:4000"
@@ -23,7 +23,7 @@ services:
     container_name: next-js-app
     build:
       context: ./apps/web
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     image: next-web
     ports:
       - "3000:3000"
