@@ -137,7 +137,7 @@ export default function CourseEditor() {
         "Are you sure you want to publish this course? It will be visible to students."
       )
     ) {
-      await updateCourse({ status: "Published" });
+      await updateCourse({ status: "published" });
       router.push("/teacher/courses");
     }
   };
@@ -195,7 +195,7 @@ export default function CourseEditor() {
               className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded font-medium text-sm transition-colors shadow-sm"
             >
               <span>
-                {course.status === "Published"
+                {course.status === "published"
                   ? "Update Course"
                   : "Publish Course"}
               </span>
@@ -461,7 +461,7 @@ export default function CourseEditor() {
 
                     {modules.length === 0 && (
                       <div className="text-center py-10 text-gray-500 bg-gray-50 rounded border border-dashed border-gray-300">
-                        No sections yet. Click "New Section" to start building
+                        No sections yet. Click New Section to start building
                         your curriculum.
                       </div>
                     )}
