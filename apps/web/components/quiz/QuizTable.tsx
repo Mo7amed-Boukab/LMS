@@ -31,8 +31,8 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
           q._id === id ? { ...q, status: QuizStatus.PUBLISHED } : q
         )
       );
-    } catch (error) {
-      alert(err.message);
+    } catch (error: any) {
+      alert(error.message);
     }
   };
 
