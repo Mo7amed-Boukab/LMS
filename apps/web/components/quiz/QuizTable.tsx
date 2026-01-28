@@ -28,11 +28,11 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
       await quizApi.publish(id);
       setQuizzes(
         quizzes.map((q) =>
-          q._id === id ? { ...q, status: QuizStatus.PUBLISHED } : q,
-        ),
+          q._id === id ? { ...q, status: QuizStatus.PUBLISHED } : q
+        )
       );
-    } catch (error) {
-      alert(err.message);
+    } catch (error: any) {
+      alert(error.message);
     }
   };
 
@@ -84,7 +84,9 @@ export default function QuizTable({ initialQuizzes }: QuizTableProps) {
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{quiz.moduleId.title}</div>
+                <div className="text-sm text-gray-500">
+                  {quiz.moduleId.title}
+                </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">{quiz.status}</td>
               <td className="px-6 py-4 whitespace-nowrap">

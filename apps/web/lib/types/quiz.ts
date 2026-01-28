@@ -1,11 +1,11 @@
 export enum QuestionType {
-  QCM = 'QCM',
-  VRAI_FAUX = 'VRAI_FAUX',
+  QCM = "QCM",
+  VRAI_FAUX = "VRAI_FAUX",
 }
 
 export enum QuizStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED",
 }
 
 export interface Option {
@@ -23,7 +23,7 @@ export interface Question {
 
 export interface Quiz {
   _id: string;
-   moduleId: {
+  moduleId: {
     _id: string;
     title: string;
   };
@@ -44,11 +44,11 @@ export interface CreateQuizDto {
 export interface CreateQuestionDto {
   text: string;
   type: QuestionType;
-  options: Omit<Option, '_id'>[];
+  options: Omit<Option, "_id">[];
 }
 
 export interface UpdateQuestionDto {
   text?: string;
   type?: QuestionType;
-  options?: Omit<Option, '_id'>[];
+  options?: Omit<Option, "_id">[];
 }

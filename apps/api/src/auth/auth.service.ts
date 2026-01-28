@@ -53,4 +53,14 @@ export class AuthService {
     const { password: _, ...result } = userObject;
     return result;
   }
+
+  async getProfile(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const userObject = user.toObject() as User & { password: string };
+    const { password: _, ...result } = userObject;
+    return result;
+  }
 }

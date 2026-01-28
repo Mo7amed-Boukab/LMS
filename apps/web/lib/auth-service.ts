@@ -1,4 +1,19 @@
-import { apiClient } from './api-client';
+import { apiClient } from "./api-client";
+import { tokenStorage } from "./token-storage";
+
+export enum Role {
+  Apprenant = "apprenant",
+  Formateur = "formateur",
+  Admin = "admin",
+}
+
+export interface User {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+}
 
 export interface LoginCredentials {
   email: string;
@@ -18,10 +33,19 @@ export interface AuthResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    return apiClient.post<AuthResponse>('/auth/login', credentials);
+    return apiClient.post<AuthResponse>("/auth/login", credentials);
   },
 
-  async register(data: RegisterData): Promise<void> {
-    return apiClient.post<void>('/auth/register', data);
+  async register(data: RegisterData): Promise<User> {
+    return apiClient.post<User>("/auth/register", data);
+  },
+
+  async getProfile(): Promise<User> {
+    const token = tokenStorage.get();
+    return apiClient.get<User>("/auth/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
   },
 };

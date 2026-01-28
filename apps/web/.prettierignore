@@ -1,0 +1,20 @@
+# Prettier ignore patterns
+node_modules
+.next
+out
+build
+dist
+coverage
+*.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Build outputs
+*.min.js
+*.min.css
+
+# Generated files
+next-env.d.ts
+
+# Logs
+*.log

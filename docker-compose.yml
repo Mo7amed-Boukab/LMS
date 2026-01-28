@@ -3,13 +3,14 @@ services:
     container_name: nest-js-app
     build:
       context: ./apps/api
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     image: nest-api
     ports:
       - "4000:4000"
     environment:
       - MONGO_URI=mongodb://mongodb:27017/lms
       - PORT=4000
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - nestjs-network
     depends_on:
@@ -23,7 +24,7 @@ services:
     container_name: next-js-app
     build:
       context: ./apps/web
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     image: next-web
     ports:
       - "3000:3000"
