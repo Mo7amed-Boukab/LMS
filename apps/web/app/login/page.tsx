@@ -6,8 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/lib/auth-service';
-import { tokenStorage } from '@/lib/token-storage';
+import { useAuth } from '@/context/auth-context';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, GraduationCap } from 'lucide-react';
 import Image from 'next/image';
 
@@ -19,10 +18,10 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   const {
     register,
@@ -36,9 +35,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authService.login(data);
-      tokenStorage.set(response.access_token);
-      router.push("/dashboard");
+      await login(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

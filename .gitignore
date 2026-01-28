@@ -3,4 +3,5 @@ database/
 .env.production
 node_modules/
 dist/
+uploads/
 

@@ -14,7 +14,7 @@ import type { AuthenticatedRequest } from 'src/common/interfaces/request-with-us
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
@@ -33,6 +33,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req: AuthenticatedRequest) {
-    return req.user;
+    return this.authService.getProfile(req.user.userId);
   }
 }

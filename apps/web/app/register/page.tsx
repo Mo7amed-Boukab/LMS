@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authService } from '@/lib/auth-service';
+import { useAuth } from '@/context/auth-context';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, GraduationCap, User } from 'lucide-react';
 
 const registerSchema = z.object({
@@ -23,11 +23,11 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const router = useRouter();
 
   const {
     register,
@@ -41,13 +41,12 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await authService.register({
+      await registerUser({
         email: data.email,
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
       });
-      router.push("/login");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {

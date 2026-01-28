@@ -14,7 +14,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async validateUser(
     email: string,
@@ -49,6 +49,16 @@ export class AuthService {
     }
 
     const user = await this.usersService.create(registerDto);
+    const userObject = user.toObject() as User & { password: string };
+    const { password: _, ...result } = userObject;
+    return result;
+  }
+
+  async getProfile(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
     const userObject = user.toObject() as User & { password: string };
     const { password: _, ...result } = userObject;
     return result;
