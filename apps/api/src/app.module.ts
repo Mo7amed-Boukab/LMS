@@ -5,6 +5,7 @@ import { QuizModule } from './quiz/quiz.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
+import { QuizAttempModule } from './quiz-attempt/quiz-attempt.module';
 import { CoursesModule } from './courses/courses.module';
 import { CourseModulesModule } from './course-modules/course-modules.module';
 import { CourseLessonsModule } from './course-lessons/course-lessons.module';
@@ -32,6 +33,7 @@ import { UploadsModule } from './uploads/uploads.module';
     CourseLessonsModule,
     UploadsModule,
     CommonModule,
+    QuizAttempModule,
   ],
 })
 export class AppModule { }
