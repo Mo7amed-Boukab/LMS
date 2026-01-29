@@ -1,4 +1,4 @@
-import QuizForm from "@/components/quiz/QuizForm";
+import QuizForm from "@/components/quiz/teacher/QuizForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 

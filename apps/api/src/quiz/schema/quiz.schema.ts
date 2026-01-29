@@ -36,7 +36,7 @@ export const QuestionSchema = SchemaFactory.createForClass(Question);
 // schema du quiz
 @Schema({ timestamps: true })
 export class Quiz extends Document {
-  @Prop({ type: Types.ObjectId, required: true, ref: 'CourseModule' })
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Module' })
   moduleId: Types.ObjectId;
 
   @Prop({ required: true })

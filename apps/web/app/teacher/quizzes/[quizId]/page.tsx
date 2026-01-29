@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { quizApi } from "@/lib/services/quizService";
-import QuestionList from "@/components/quiz/QuestionList";
+import QuestionList from "@/components/quiz/teacher/QuestionList";
 import { questionApi } from "@/lib/services/questionService";
-import QuizHeader from "@/components/quiz/QuizHeader";
+import QuizHeader from "@/components/quiz/teacher/QuizHeader";
 import { Question } from "@/lib/types/quiz";
 
 export default async function QuizDetailPage({

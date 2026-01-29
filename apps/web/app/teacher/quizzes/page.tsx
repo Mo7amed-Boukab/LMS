@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import QuizTable from "@/components/quiz/QuizTable";
+import QuizTable from "@/components/quiz/teacher/QuizTable";
 import { quizApi } from "@/lib/services/quizService";
 import { Quiz } from "@/lib/types/quiz";
 
