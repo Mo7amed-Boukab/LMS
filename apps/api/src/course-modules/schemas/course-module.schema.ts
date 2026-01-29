@@ -33,6 +33,21 @@ export class Module {
 export const CourseModuleSchema = SchemaFactory.createForClass(Module);
 
 /**
+ * Virtual populate for lessons
+ * This allows us to populate lessons when querying modules
+ */
+CourseModuleSchema.virtual('lessons', {
+  ref: 'CourseLesson',
+  localField: '_id',
+  foreignField: 'moduleId',
+  options: { sort: { order: 1 } },
+});
+
+// Enable virtuals in toJSON and toObject
+CourseModuleSchema.set('toJSON', { virtuals: true });
+CourseModuleSchema.set('toObject', { virtuals: true });
+
+/**
  * Index composé pour optimiser les requêtes :
  * - Récupération des modules d'un cours triés par ordre
  */

@@ -1,26 +1,26 @@
 import {
-  Star,
-  Clock,
-  BarChart,
-  Globe,
-  RefreshCw,
-  CheckCircle,
-  PlayCircle,
-  Lock,
-  FileText,
-  Monitor,
-  Download,
-  Infinity,
-  Smartphone,
   Award,
-  Share2,
+  BarChart,
+  CheckCircle,
+  Clock,
+  Download,
+  FileText,
   Gift,
+  Globe,
+  Infinity,
+  Lock,
+  Monitor,
   Play,
+  PlayCircle,
+  RefreshCw,
+  Share2,
+  Smartphone,
+  Star,
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import Header from "../../../components/layout/Header";
 import Footer from "../../../components/layout/Footer";
+import Header from "../../../components/layout/Header";
 
 export default function CourseDetailsPage() {
   return (

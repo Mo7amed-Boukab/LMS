@@ -1,30 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import ConfirmModal from "@/components/modals/ConfirmModal";
+import { useCourseEditor } from "@/context/Course-editor-context";
+import { teacherCourseService } from "@/lib/services/teacher-course.service";
 import {
-  Save,
-  ArrowLeft,
-  Layout,
-  List,
-  Settings,
-  Image as ImageIcon,
-  Plus,
-  GripVertical,
-  X,
-  UploadCloud,
-  ChevronDown,
-  Eye,
-  Check,
-  Trash2,
-  Edit,
-  Loader2,
+    ArrowLeft,
+    Check,
+    ChevronDown,
+    Eye,
+    FileText,
+    GripVertical,
+    Image as ImageIcon,
+    Layout,
+    List,
+    Loader2,
+    Plus,
+    Settings,
+    Trash2,
+    UploadCloud,
+    Video,
+    X
 } from "lucide-react";
 import Link from "next/link";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import { useCourseEditor } from "@/context/Course-editor-context";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { teacherCourseService } from "@/lib/services/teacher-course.service";
 
 const categories = [
   "Design",
@@ -116,6 +117,20 @@ export default function CourseEditor() {
   const [activeTab, setActiveTab] = useState("basic");
   const router = useRouter();
 
+  // Modal states
+  const [deleteModuleModal, setDeleteModuleModal] = useState<{
+    isOpen: boolean;
+    moduleId: string | null;
+  }>({ isOpen: false, moduleId: null });
+  const [deleteLessonModal, setDeleteLessonModal] = useState<{
+    isOpen: boolean;
+    lessonId: string | null;
+  }>({ isOpen: false, lessonId: null });
+  const [publishModal, setPublishModal] = useState(false);
+
+  // Uploading states for lessons
+  const [uploadingLesson, setUploadingLesson] = useState<string | null>(null);
+
   if (isLoading || !course) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -132,14 +147,9 @@ export default function CourseEditor() {
       return;
     }
 
-    if (
-      confirm(
-        "Are you sure you want to publish this course? It will be visible to students."
-      )
-    ) {
-      await updateCourse({ status: "published" });
-      router.push("/teacher/courses");
-    }
+    await updateCourse({ status: "published" });
+    setPublishModal(false);
+    router.push("/teacher/courses");
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -153,6 +163,84 @@ export default function CourseEditor() {
     } catch (error) {
       console.error(error);
       toast.error("Failed to upload thumbnail");
+    }
+  };
+
+  const handleLessonUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    lessonId: string,
+    lessonType: "VIDEO" | "PDF"
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLesson(lessonId);
+    const toastId = toast.loading("Uploading content...");
+
+    try {
+      const uploadType = lessonType === "PDF" ? "pdf" : "video";
+      const result = await teacherCourseService.uploadFile(file, uploadType);
+
+      // Simulate getting video duration if it's a video
+      let duration = 0;
+      if (uploadType === "video") {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.src = URL.createObjectURL(file);
+
+        await new Promise<void>((resolve) => {
+          video.onloadedmetadata = () => {
+            duration = video.duration;
+            URL.revokeObjectURL(video.src);
+            resolve();
+          };
+          video.onerror = () => resolve();
+        });
+      }
+
+      // Update lesson with URL and metadata
+      await updateLesson(lessonId, {
+        contentUrl: result.url,
+        metadata: { duration: duration || 0, fileName: result.originalName },
+      });
+
+      toast.success("Content uploaded successfully", { id: toastId });
+    } catch (error) {
+      toast.error("Upload failed", { id: toastId });
+    } finally {
+      setUploadingLesson(null);
+    }
+  };
+
+  const getMediaUrl = (url?: string) => {
+    if (!url) return "";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    if (url.startsWith("http://localhost:3000/")) {
+      return url.replace("http://localhost:3000", apiUrl);
+    }
+    if (url.startsWith("http")) return url;
+    return `${apiUrl}/${url.startsWith("/") ? url.slice(1) : url}`;
+  };
+
+  const confirmDeleteModule = async () => {
+    if (!deleteModuleModal.moduleId) return;
+
+    try {
+      await deleteModule(deleteModuleModal.moduleId);
+      setDeleteModuleModal({ isOpen: false, moduleId: null });
+    } catch (error) {
+      // Error is handled in context
+    }
+  };
+
+  const confirmDeleteLesson = async () => {
+    if (!deleteLessonModal.lessonId) return;
+
+    try {
+      await deleteLesson(deleteLessonModal.lessonId);
+      setDeleteLessonModal({ isOpen: false, lessonId: null });
+    } catch (error) {
+      // Error is handled in context
     }
   };
 
@@ -191,7 +279,7 @@ export default function CourseEditor() {
             </div>
 
             <button
-              onClick={handlePublish}
+              onClick={() => setPublishModal(true)}
               className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded font-medium text-sm transition-colors shadow-sm"
             >
               <span>
@@ -375,24 +463,31 @@ export default function CourseEditor() {
                                     });
                                   }
                                 }}
-                                className="w-full bg-transparent border-none text-base font-bold text-gray-900 focus:ring-0 p-0 hover:underline decoration-dashed decoration-gray-300 underline-offset-4 transition-all"
+                                className="w-full bg-transparent border-none text-base font-bold text-gray-900 focus:ring-0 p-0 hover:bg-gray-100/50 rounded px-2 -ml-2 transition-colors"
                               />
                             </div>
                           </div>
                           <button
-                            onClick={() => deleteModule(module._id)}
+                            onClick={() =>
+                              setDeleteModuleModal({
+                                isOpen: true,
+                                moduleId: module._id,
+                              })
+                            }
                             className="text-gray-400 hover:text-red-600 p-2 rounded hover:bg-red-50 transition-colors"
                           >
                             <Trash2 size={18} />
                           </button>
                         </div>
+
                         <div className="p-4 space-y-3">
                           {module.lessons?.map((lesson, lIndex) => (
                             <div
                               key={lesson._id}
-                              className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded group hover:border-gray-300 transition-all"
+                              className="bg-white border border-gray-200 rounded p-4 group hover:border-gray-300 transition-all"
                             >
-                              <div className="flex items-center gap-4 w-full">
+                              {/* Lesson Header */}
+                              <div className="flex items-center gap-4 mb-3">
                                 <GripVertical
                                   size={16}
                                   className="text-gray-300 cursor-move"
@@ -410,51 +505,181 @@ export default function CourseEditor() {
                                       });
                                     }
                                   }}
-                                  className="flex-1 bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 p-0"
+                                  placeholder="Enter lesson title"
+                                  className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium text-gray-700 p-0 hover:bg-gray-50 rounded px-2 -ml-2 transition-colors"
                                 />
-                                <span className="text-xs text-gray-400 uppercase border px-1 rounded">
-                                  {lesson.type}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100">
-                                  <Edit size={14} />
-                                </button>
                                 <button
-                                  onClick={() => deleteLesson(lesson._id)}
+                                  onClick={() =>
+                                    setDeleteLessonModal({
+                                      isOpen: true,
+                                      lessonId: lesson._id,
+                                    })
+                                  }
                                   className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50"
                                 >
                                   <X size={14} />
                                 </button>
                               </div>
+
+                              {/* Lesson Details */}
+                              <div className="pl-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Type Selector */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                                    Content Type
+                                  </label>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() =>
+                                        updateLesson(lesson._id, {
+                                          type: "VIDEO",
+                                        })
+                                      }
+                                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded border transition-all ${
+                                        lesson.type === "VIDEO"
+                                          ? "bg-red-50 border-red-200 text-red-700"
+                                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                                      }`}
+                                    >
+                                      <Video size={14} /> Video
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        updateLesson(lesson._id, { type: "PDF" })
+                                      }
+                                      className={`flex-1 flex items-center justify-center gap-2 py-2 text-xs font-medium rounded border transition-all ${
+                                        lesson.type === "PDF"
+                                          ? "bg-red-50 border-red-200 text-red-700"
+                                          : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                                      }`}
+                                    >
+                                      <FileText size={14} /> PDF
+                                    </button>
+                                  </div>
+
+                                  <div className="mt-3 flex items-center gap-2">
+                                    <label className="flex items-center gap-2 text-xs text-gray-600 font-medium cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={lesson.isPreview || false}
+                                        onChange={(e) =>
+                                          updateLesson(lesson._id, {
+                                            isPreview: e.target.checked,
+                                          })
+                                        }
+                                        className="rounded border-gray-300 text-red-600 focus:ring-red-500 w-3.5 h-3.5"
+                                      />
+                                      Free Preview
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* File Upload */}
+                                <div>
+                                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                                    {lesson.type === "VIDEO"
+                                      ? "Video Content"
+                                      : "PDF Document"}
+                                  </label>
+
+                                  {!lesson.contentUrl ||
+                                  lesson.contentUrl.includes("placeholder") ? (
+                                    <div className="relative">
+                                      <input
+                                        type="file"
+                                        accept={
+                                          lesson.type === "VIDEO"
+                                            ? "video/*"
+                                            : "application/pdf"
+                                        }
+                                        onChange={(e) =>
+                                          handleLessonUpload(
+                                            e,
+                                            lesson._id,
+                                            lesson.type
+                                          )
+                                        }
+                                        disabled={uploadingLesson === lesson._id}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                      />
+                                      <div className="w-full border border-dashed border-gray-300 rounded bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-white hover:border-gray-400 transition-all py-2 px-3 flex items-center justify-center gap-2 text-xs cursor-pointer">
+                                        {uploadingLesson === lesson._id ? (
+                                          <>
+                                            <Loader2
+                                              size={14}
+                                              className="animate-spin"
+                                            />
+                                            Uploading...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <UploadCloud size={14} />
+                                            Upload{" "}
+                                            {lesson.type === "VIDEO"
+                                              ? "Video"
+                                              : "PDF"}
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800">
+                                      <div className="flex items-center gap-2 truncate">
+                                        <Check size={14} className="flex-shrink-0" />
+                                        <span className="truncate">
+                                          {lesson.metadata?.fileName ||
+                                            "File uploaded"}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <a
+                                          href={getMediaUrl(lesson.contentUrl)}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="p-1 hover:bg-green-100 rounded text-green-700"
+                                          title="View"
+                                        >
+                                          <Eye size={14} />
+                                        </a>
+                                        <button
+                                          onClick={async () => {
+                                            try {
+                                              await updateLesson(lesson._id, {
+                                                contentUrl: "https://placeholder.com/video",
+                                                metadata: {},
+                                              });
+                                            } catch (error) {
+                                              console.error("Error removing file:", error);
+                                            }
+                                          }}
+                                          className="p-1 hover:bg-green-100 rounded text-green-700"
+                                          title="Remove"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           ))}
-                          <div className="flex gap-2 mt-2">
-                            <button
-                              onClick={() =>
-                                createLesson(module._id, {
-                                  title: "New Video Lesson",
-                                  type: "VIDEO",
-                                  contentUrl: "",
-                                })
-                              }
-                              className="flex-1 py-2.5 border border-dashed border-gray-300 rounded text-sm font-medium text-gray-500 hover:border-gray-400 hover:bg-white hover:text-gray-700 transition-all flex items-center justify-center gap-2"
-                            >
-                              <Plus size={14} /> Add Video
-                            </button>
-                            <button
-                              onClick={() =>
-                                createLesson(module._id, {
-                                  title: "New PDF Lesson",
-                                  type: "PDF",
-                                  contentUrl: "",
-                                })
-                              }
-                              className="flex-1 py-2.5 border border-dashed border-gray-300 rounded text-sm font-medium text-gray-500 hover:border-gray-400 hover:bg-white hover:text-gray-700 transition-all flex items-center justify-center gap-2"
-                            >
-                              <Plus size={14} /> Add PDF
-                            </button>
-                          </div>
+
+                          {/* Add Lesson Button */}
+                          <button
+                            onClick={() => {
+                              // Calculate the next order number
+                              const nextOrder = (module.lessons?.length || 0) + 1;
+                              createLesson(module._id, {
+                                title: "New Lesson",
+                                type: "VIDEO",
+                                contentUrl: "https://placeholder.com/video",
+                              });
+                            }}
+                            className="w-full py-2.5 border border-dashed border-gray-300 rounded text-sm font-medium text-gray-500 hover:border-gray-400 hover:bg-white hover:text-gray-700 transition-all flex items-center justify-center gap-2 mt-2"
+                          >
+                            <Plus size={14} /> Add Lesson
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -495,7 +720,7 @@ export default function CourseEditor() {
                         />
                         {course.thumbnail ? (
                           <img
-                            src={course.thumbnail}
+                            src={getMediaUrl(course.thumbnail)}
                             alt="Thumbnail"
                             className="max-h-64 object-cover rounded shadow-sm"
                           />
@@ -634,6 +859,52 @@ export default function CourseEditor() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <ConfirmModal
+        isOpen={deleteModuleModal.isOpen}
+        onClose={() =>
+          setDeleteModuleModal({ isOpen: false, moduleId: null })
+        }
+        onConfirm={confirmDeleteModule}
+        title="Delete Section"
+        message="Are you sure you want to delete this section and all its lessons? This action cannot be undone."
+        confirmText="Delete"
+        confirmVariant="danger"
+        isLoading={isSaving}
+      />
+
+      <ConfirmModal
+        isOpen={deleteLessonModal.isOpen}
+        onClose={() =>
+          setDeleteLessonModal({ isOpen: false, lessonId: null })
+        }
+        onConfirm={confirmDeleteLesson}
+        title="Delete Lesson"
+        message="Are you sure you want to delete this lesson? This action cannot be undone."
+        confirmText="Delete"
+        confirmVariant="danger"
+        isLoading={isSaving}
+      />
+
+      <ConfirmModal
+        isOpen={publishModal}
+        onClose={() => setPublishModal(false)}
+        onConfirm={handlePublish}
+        title={
+          course.status === "published" ? "Update Course" : "Publish Course"
+        }
+        message={
+          course.status === "published"
+            ? "Are you sure you want to update this course? Changes will be visible to all enrolled students."
+            : "Are you sure you want to publish this course? It will be visible to students."
+        }
+        confirmText={
+          course.status === "published" ? "Update" : "Publish"
+        }
+        confirmVariant="primary"
+        isLoading={isSaving}
+      />
     </>
   );
 }
