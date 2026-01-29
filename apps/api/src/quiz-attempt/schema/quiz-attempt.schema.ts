@@ -34,8 +34,8 @@ export class QuizAttempt extends Document {
   @Prop({ required: true, min: 0, max: 100 })
   score: number;
 
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const QuizAttemptSchema = SchemaFactory.createForClass(QuizAttempt);

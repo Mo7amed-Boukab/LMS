@@ -10,6 +10,7 @@ import { CoursesModule } from './courses/courses.module';
 import { CourseModulesModule } from './course-modules/course-modules.module';
 import { CourseLessonsModule } from './course-lessons/course-lessons.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { ProgressModuleModule } from './progress-module/progress-module.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UploadsModule } from './uploads/uploads.module';
     UploadsModule,
     CommonModule,
     QuizAttempModule,
+    ProgressModuleModule,
   ],
 })
 export class AppModule {}
