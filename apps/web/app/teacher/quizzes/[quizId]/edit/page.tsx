@@ -2,25 +2,25 @@
 
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { quizApi } from "@/lib/services/quizService";
-import { teacherCourseService } from "@/lib/services/teacher-course.service"; // Import course service
+import { teacherCourseService } from "@/lib/services/teacher-course.service";
 import { CreateQuizDto, QuestionType } from "@/lib/types/quiz";
 import {
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  Clock,
-  Layout,
-  List,
-  Loader2,
-  Plus,
-  Save,
-  Settings,
-  Trash2,
-  X
+    ArrowLeft,
+    Check,
+    ChevronDown,
+    Clock,
+    Layout,
+    List,
+    Loader2,
+    Plus,
+    Save,
+    Settings,
+    Trash2,
+    X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // --- Components ---
@@ -31,7 +31,7 @@ function CustomSelect({
   onChange,
   placeholder = "Select...",
 }: {
-  options: { label: string; value: string }[]; // Changed to handle object options
+  options: { label: string; value: string }[];
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
@@ -99,26 +99,32 @@ interface LocalOption {
 }
 
 interface LocalQuestion {
-  id: string | number; // Local ID (number) or Backend ID (string)
+  id: string | number;
   text: string;
   type: QuestionType;
   options: LocalOption[];
-  _id?: string; // Backend ID if known
+  _id?: string;
 }
 
-export default function CreateQuizPage() {
+export default function EditQuizPage({
+  params,
+}: {
+  params: Promise<{ quizId: string }>;
+}) {
+  const { quizId: paramQuizId } = use(params);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("basic");
   const [isSaving, setIsSaving] = useState(false);
-  const [quizId, setQuizId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [quizId, setQuizId] = useState<string | null>(paramQuizId);
 
   // Form State
   const [title, setTitle] = useState("");
-  const [moduleId, setModuleId] = useState(""); 
+  const [moduleId, setModuleId] = useState("");
   const [passingScore, setPassingScore] = useState(70);
   const [questions, setQuestions] = useState<LocalQuestion[]>([]);
 
-  // Settings State (Frontend Only for now)
+  // Settings State
   const [timeLimit, setTimeLimit] = useState(30);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [maxAttempts, setMaxAttempts] = useState(3);
@@ -128,15 +134,14 @@ export default function CreateQuizPage() {
   const [availableModules, setAvailableModules] = useState<{ label: string; value: string }[]>([]);
   const [isLoadingModules, setIsLoadingModules] = useState(true);
 
-  // Fetch Modules on Mount
+  // Initial Data Fetch
   useEffect(() => {
-    const fetchModules = async () => {
+    const fetchData = async () => {
         try {
+            // 1. Fetch Modules
             const courses = await teacherCourseService.getAllCourses();
             const moduleOptions: { label: string; value: string }[] = [];
-
-            // Parallel fetching might be faster but let's be safe with sequential for now or Promise.all
-            // Fetch modules for each course to build the flat list
+            
             await Promise.all(courses.map(async (course) => {
                 try {
                     const modules = await teacherCourseService.getModulesByCourse(course._id);
@@ -147,20 +152,54 @@ export default function CreateQuizPage() {
                         });
                     });
                 } catch (e) {
-                    // Ignore errors for specific courses
+                   // ignore
                 }
             }));
-            
             setAvailableModules(moduleOptions);
-        } catch (error) {
-            console.error("Failed to load modules", error);
-            toast.error("Failed to load modules list");
-        } finally {
             setIsLoadingModules(false);
+
+            // 2. Fetch Quiz Data
+            if (paramQuizId) {
+                const quiz = await quizApi.getById(paramQuizId);
+                setTitle(quiz.title);
+                // Handle different shapes of moduleId if populated
+                if (typeof quiz.moduleId === 'object' && quiz.moduleId !== null && '_id' in quiz.moduleId) {
+                     setModuleId((quiz.moduleId as any)._id);
+                } else {
+                     setModuleId(quiz.moduleId as unknown as string);
+                }
+                
+                setPassingScore(quiz.passingScore);
+                setTimeLimit(quiz.timeLimit || 0);
+                setMaxAttempts(quiz.maxAttempts || 1);
+                setShuffleQuestions(quiz.shuffleQuestions || false);
+                setShowResults(quiz.showResultsImmediately ?? true);
+                
+                // Map questions
+                const mappedQuestions: LocalQuestion[] = quiz.questions.map(q => ({
+                    id: q._id!, // Use backend ID
+                    _id: q._id,
+                    text: q.text,
+                    type: q.type,
+                    options: q.options.map(o => ({
+                        text: o.text,
+                        isCorrect: o.isCorrect
+                    }))
+                }));
+                setQuestions(mappedQuestions);
+            }
+
+        } catch (error) {
+            console.error("Failed to load data", error);
+            toast.error("Failed to load quiz data");
+            // router.push("/teacher/quizzes");
+        } finally {
+            setIsLoading(false);
         }
     };
-    fetchModules();
-  }, []);
+    
+    fetchData();
+  }, [paramQuizId, router]);
 
 
   const handleSave = async (publish = false) => {
@@ -175,8 +214,7 @@ export default function CreateQuizPage() {
 
     setIsSaving(true);
     try {
-      // 1. Create or Update Quiz
-      let currentQuizId = quizId;
+      // 1. Update Quiz
       const quizData: Partial<CreateQuizDto> = {
         title,
         moduleId,
@@ -187,33 +225,18 @@ export default function CreateQuizPage() {
         showResultsImmediately: showResults,
       };
 
-      if (!currentQuizId) {
-        // Create
-        const newQuiz = await quizApi.create(quizData as CreateQuizDto);
-        currentQuizId = newQuiz._id;
-        setQuizId(newQuiz._id);
-        toast.success(publish ? "Quiz created and published!" : "Quiz draft created!");
-      } else {
-        // Update
-        await quizApi.update(currentQuizId, quizData);
-        toast.success("Quiz saved!");
-      }
+      await quizApi.update(quizId!, quizData);
+      toast.success("Quiz settings saved!");
 
       // 2. Sync Questions
-      // Note: Full sync logic would be complex (diffing).
-      // Here we assume we just iterate and save/update each.
-      // Ideally, we should soft-delete removed questions, but the API logic I added supports delete.
-      // For now, let's just Upsert questions.
-      
-      // NOTE: Current backend API for 'addQuestion' and 'updateQuestion' handles one by one.
-      // Ideally we should have a bulk update endpoints, but we iterate for now.
+      // IMPORTANT: In a real app, strict diffing is needed.
+      // Here, we re-verify all questions.
       
       const updatedQuestions = [...questions];
 
       for (let i = 0; i < updatedQuestions.length; i++) {
         const q = updatedQuestions[i];
         
-        // Basic validation
         if (!q.text.trim()) continue; 
         if (q.options.length < 2) continue; 
 
@@ -225,18 +248,19 @@ export default function CreateQuizPage() {
 
         if (q._id) {
           // Update existing
-          await quizApi.updateQuestion(currentQuizId!, q._id, questionData);
+          await quizApi.updateQuestion(quizId!, q._id, questionData);
         } else {
-          // Create new
-          const newQ = await quizApi.addQuestion(currentQuizId!, questionData);
+          // Add new question that was added in UI
+          const newQ = await quizApi.addQuestion(quizId!, questionData);
           updatedQuestions[i]._id = newQ._id;
           updatedQuestions[i].id = newQ._id; 
         }
       }
       setQuestions(updatedQuestions);
 
-      if (publish && currentQuizId) {
-        await quizApi.publish(currentQuizId);
+      if (publish) {
+        await quizApi.publish(quizId!);
+        toast.success("Quiz published!");
         router.push("/teacher/quizzes");
       }
     } catch (error: any) {
@@ -288,9 +312,9 @@ export default function CreateQuizPage() {
     
   const removeQuestion = async (index: number) => {
       const question = questions[index];
-      if (question._id && quizId) {
+      if (question._id) {
           try {
-             await quizApi.deleteQuestion(quizId, question._id);
+             await quizApi.deleteQuestion(quizId!, question._id);
              toast.success("Question deleted");
           } catch (e) {
               toast.error("Failed to delete question");
@@ -299,12 +323,20 @@ export default function CreateQuizPage() {
       }
       setQuestions(questions.filter((_, i) => i !== index));
   }
+  
+  if (isLoading) {
+      return (
+          <div className="flex items-center justify-center min-h-screen">
+            <Loader2 size={32} className="animate-spin text-red-700" />
+          </div>
+      )
+  }
 
   return (
     <>
       <DashboardHeader
-        title="Create New Quiz"
-        description="Design a quiz to test student knowledge."
+        title="Edit Quiz"
+        description="Update your quiz questions and settings."
       />
 
       {/* Main Container */}
@@ -330,14 +362,14 @@ export default function CreateQuizPage() {
               ) : (
                 <Save size={16} />
               )}
-              Save Draft
+              Save Changes
             </button>
             <button
               onClick={() => handleSave(true)}
               disabled={isSaving}
               className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-5 py-2 rounded font-medium text-sm transition-colors shadow-sm disabled:opacity-50"
             >
-              <span>Publish Quiz</span>
+              <span>Update & Publish</span>
             </button>
           </div>
         </div>
@@ -393,7 +425,7 @@ export default function CreateQuizPage() {
                       Basic Information
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Configure the basic settings for your quiz.
+                      Edit the basic details of the quiz.
                     </p>
                   </div>
 
@@ -428,9 +460,6 @@ export default function CreateQuizPage() {
                             placeholder="Select a module to link..."
                         />
                       )}
-                      <p className="mt-1.5 text-xs text-gray-400">
-                         Select the module this quiz belongs to (must create modules in Courses first).
-                      </p>
                     </div>
 
                     <div>
@@ -581,7 +610,7 @@ export default function CreateQuizPage() {
                             Quiz Settings
                         </h3>
                         <p className="text-sm text-gray-500">
-                            Configure advanced options for this quiz (Time limits, attempts, etc.)
+                            Configure advanced options for this quiz.
                         </p>
                     </div>
                     
