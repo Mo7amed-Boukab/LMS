@@ -1,16 +1,16 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { notFound } from "next/navigation";
-import { quizApi } from "@/lib/services/quizService";
 import QuestionList from "@/components/quiz/QuestionList";
-import { questionApi } from "@/lib/services/questionService";
 import QuizHeader from "@/components/quiz/QuizHeader";
+import { questionApi } from "@/lib/services/questionService";
+import { quizApi } from "@/lib/services/quizService";
 import { Question } from "@/lib/types/quiz";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export default async function QuizDetailPage({
   params,
 }: {
-  params: { quizId: string };
+  params: Promise<{ quizId: string }>;
 }) {
   const { quizId } = await params;
   let quiz = null;
