@@ -36,7 +36,7 @@ export const QuestionSchema = SchemaFactory.createForClass(Question);
 // schema du quiz
 @Schema({ timestamps: true })
 export class Quiz extends Document {
-  @Prop({ type: Types.ObjectId, required: true, ref: 'CourseModule' })
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Module' })
   moduleId: Types.ObjectId;
 
   @Prop({ required: true })
@@ -44,6 +44,18 @@ export class Quiz extends Document {
 
   @Prop({ required: true, min: 0, max: 100 })
   passingScore: number;
+
+  @Prop({ default: 0 })
+  timeLimit: number;
+
+  @Prop({ default: 3 })
+  maxAttempts: number;
+
+  @Prop({ default: false })
+  shuffleQuestions: boolean;
+
+  @Prop({ default: true })
+  showResultsImmediately: boolean;
 
   @Prop({ enum: QuizStatus, default: QuizStatus.DRAFT })
   status: QuizStatus;

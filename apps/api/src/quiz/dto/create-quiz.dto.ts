@@ -1,17 +1,17 @@
 import { Type } from 'class-transformer';
 import {
-  ArrayMinSize,
-  IsArray,
-  // ArrayMinSize,
-  // IsArray,
-  IsBoolean,
-  IsEnum,
-  IsMongoId,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  ValidateNested,
-  // ValidateNested,
+    ArrayMinSize,
+    IsArray,
+    // ArrayMinSize,
+    // IsArray,
+    IsBoolean,
+    IsEnum,
+    IsMongoId,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    ValidateNested,
 } from 'class-validator';
 import { QuestionType } from 'src/common/enums/question-type.enum';
 
@@ -48,6 +48,22 @@ export class CreateQuizDto {
 
   @IsNumber()
   passingScore: number;
+
+  @IsOptional()
+  @IsNumber()
+  timeLimit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  maxAttempts?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  shuffleQuestions?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  showResultsImmediately?: boolean;
 
   @IsMongoId()
   moduleId: string;
