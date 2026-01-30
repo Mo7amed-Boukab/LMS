@@ -1,8 +1,8 @@
 "use client";
 
-import { GraduationCap, Search, LogOut, User as UserIcon } from "lucide-react";
-import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
+import { GraduationCap, LogOut, Search, User as UserIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -69,6 +69,14 @@ export default function Header() {
               <input
                 className="w-full h-full border-none outline-none text-sm px-3 text-[#1a1a1a] placeholder:text-gray-500"
                 placeholder="Search courses..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const query = e.currentTarget.value;
+                    if (query.trim()) {
+                      window.location.href = `/courses?search=${encodeURIComponent(query)}`;
+                    }
+                  }
+                }}
               />
             </div>
 
