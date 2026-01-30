@@ -61,6 +61,10 @@ export const courseApi = {
   getCurriculum: async (courseId: string): Promise<CourseModule[]> => {
     return apiClient.get<CourseModule[]>(`/course-modules/public/course/${courseId}`);
   },
+
+  getCategories: async (): Promise<{ category: string; count: number }[]> => {
+    return apiClient.get<{ category: string; count: number }[]>('/courses/public/categories');
+  },
 };
 
 export interface CourseLesson {

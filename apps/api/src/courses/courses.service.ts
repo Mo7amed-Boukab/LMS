@@ -11,11 +11,18 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Course, CourseDocument } from './schemas/course.schema';
 
+import { CourseLesson, CourseLessonDocument } from '../course-lessons/schemas/course-lesson.schema';
+import { CourseModuleDocument, Module as CourseModuleEntity } from '../course-modules/schemas/course-module.schema';
+
 @Injectable()
 export class CoursesService {
   constructor(
     @InjectModel(Course.name)
     private readonly courseModel: Model<CourseDocument>,
+    @InjectModel(CourseModuleEntity.name)
+    private readonly moduleModel: Model<CourseModuleDocument>,
+    @InjectModel(CourseLesson.name)
+    private readonly lessonModel: Model<CourseLessonDocument>,
   ) {}
 
   async create(
@@ -78,8 +85,36 @@ export class CoursesService {
     instructorId: string,
   ): Promise<CourseDocument> {
     const course = await this.findOne(id, instructorId);
+
+    // If attempting to publish, validate content
+    if (updateCourseDto.status === 'published' && course.status !== 'published') {
+      await this.validateCourseForPublication(id);
+    }
+
     Object.assign(course, updateCourseDto);
     return course.save();
+  }
+
+  private async validateCourseForPublication(courseId: string) {
+    const modules = await this.moduleModel.find({ courseId: new Types.ObjectId(courseId) }).lean();
+    
+    if (!modules || modules.length === 0) {
+      throw new BadRequestException('Cannot publish course: It must have at least one module.');
+    }
+
+    const moduleIds = modules.map(m => m._id);
+    const lessonsCount = await this.lessonModel.aggregate([
+      { $match: { moduleId: { $in: moduleIds }, isActive: true } },
+      { $group: { _id: '$moduleId', count: { $sum: 1 } } }
+    ]);
+    
+    const modulesWithLessons = new Set(lessonsCount.map(l => l._id.toString()));
+
+    for (const module of modules) {
+        if (!modulesWithLessons.has(module._id.toString())) {
+             throw new BadRequestException(`Cannot publish course: Module "${module.title}" is empty (no lessons).`);
+        }
+    }
   }
 
   async remove(id: string, instructorId: string): Promise<void> {
@@ -159,5 +194,16 @@ export class CoursesService {
     }
 
     return course;
+  }
+
+  async getCategoriesWithCounts(): Promise<{ category: string; count: number }[]> {
+    return this.courseModel
+      .aggregate([
+        { $match: { isPublicVisible: true, status: 'published' } },
+        { $group: { _id: '$category', count: { $sum: 1 } } },
+        { $project: { category: '$_id', count: 1, _id: 0 } },
+        { $sort: { count: -1 } },
+      ])
+      .exec();
   }
 }

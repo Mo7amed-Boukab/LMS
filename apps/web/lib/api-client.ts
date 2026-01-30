@@ -24,7 +24,6 @@ export const apiClient = {
       }
 
       if (response.status === 401) {
-        // Optional: you could clear token here, but better to handle in context
         console.warn("Unauthorized request to:", endpoint);
       }
 
