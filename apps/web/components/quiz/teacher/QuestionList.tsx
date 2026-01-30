@@ -39,14 +39,12 @@ export default function QuestionList({
   const handleQuestionAdded = () => {
     setShowAddForm(false);
     router.refresh();
-    // Recharger les questions
     questionApi.getAll(quizId).then(setQuestions);
   };
 
   const handleQuestionUpdated = () => {
     setEditingQuestion(null);
     router.refresh();
-    // Recharger les questions
     questionApi.getAll(quizId).then(setQuestions);
   };
 
