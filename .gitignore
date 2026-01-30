@@ -1,6 +1,6 @@
 database/
 .env
-.env.prod
+.env.production
 node_modules/
 dist/
 uploads/
