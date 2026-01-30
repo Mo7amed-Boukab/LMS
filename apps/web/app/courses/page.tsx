@@ -276,7 +276,7 @@ export default function CoursesPage() {
                         description={course.description}
                         instructorName={`${course.instructorId.firstName} ${course.instructorId.lastName}`}
                         instructorAvatar={`https://ui-avatars.com/api/?name=${course.instructorId.firstName}+${course.instructorId.lastName}&background=random&color=fff&background=ef4444`}
-                        price={`$${course.price.toFixed(2)}`}
+                        price={`${course.price.toFixed(2)} DH`}
                         slug={course._id}
                       />
                     ))}

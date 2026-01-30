@@ -57,4 +57,29 @@ export const courseApi = {
   getByIdPublic: async (id: string): Promise<Course> => {
     return apiClient.get<Course>(`/courses/public/${id}`);
   },
+
+  getCurriculum: async (courseId: string): Promise<CourseModule[]> => {
+    return apiClient.get<CourseModule[]>(`/course-modules/public/course/${courseId}`);
+  },
 };
+
+export interface CourseLesson {
+  _id: string;
+  title: string;
+  moduleId: string;
+  order: number;
+  type: "VIDEO" | "PDF";
+  contentUrl: string;
+  isActive: boolean;
+  isPreview: boolean;
+  metadata?: Record<string, any>;
+}
+
+export interface CourseModule {
+  _id: string;
+  title: string;
+  courseId: string;
+  order: number;
+  isActive: boolean;
+  lessons?: CourseLesson[];
+}
