@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import QuizHeader from '@/components/quiz/student/QuizHeader';
-import QuizQuestion from '@/components/quiz/student/QuizQuestion';
-import QuizActions from '@/components/quiz/student/QuizActions';
-import QuizNavigator from '@/components/quiz/student/QuizNavigator';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import QuizHeader from "@/components/quiz/student/QuizHeader";
+import QuizQuestion from "@/components/quiz/student/QuizQuestion";
+import QuizActions from "@/components/quiz/student/QuizActions";
+import QuizNavigator from "@/components/quiz/student/QuizNavigator";
 
 interface QuizClientProps {
   quiz: any;
@@ -23,7 +23,6 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
     if (saved) setAnswers(JSON.parse(saved));
   }, [quizId]);
 
-  
   useEffect(() => {
     if (Object.keys(answers).length > 0) {
       localStorage.setItem(`quiz-${quizId}-answers`, JSON.stringify(answers));
@@ -36,19 +35,21 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
 
   const handleSubmit = async () => {
     if (Object.keys(answers).length !== quiz.questions.length) {
-      alert('Please answer all questions!');
+      alert("Please answer all questions!");
       return;
     }
 
-    if (!confirm('Submit quiz? You cannot change answers after.')) return;
+    if (!confirm("Submit quiz? You cannot change answers after.")) return;
 
     setIsSubmitting(true);
 
     try {
-      const token = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('access_token='))
-        ?.split('=')[1];
+      const token = localStorage.getItem("auth_token");
+
+      if (!token) {
+        alert("Session expired. Please login again.");
+        return;
+      }
 
       const formattedAnswers = Object.entries(answers).map(
         ([questionId, selectedOptionId]) => ({ questionId, selectedOptionId })
@@ -57,9 +58,9 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
       const res = await fetch(
         `http://localhost:4000/quiz-attempts/quiz/${quizId}/submit`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ answers: formattedAnswers }),
@@ -67,10 +68,17 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
       );
 
       const result = await res.json();
+
+      if (!res.ok) {
+        alert("Error submitting quiz: " + (result.message || "Unknown error"));
+        setIsSubmitting(false);
+        return;
+      }
+
       localStorage.removeItem(`quiz-${quizId}-answers`);
-      router.push(`/quiz/${quizId}/results/${result.attemptId}`);
+      router.push(`/student/quiz/${quizId}/results/${result.attemptId}`);
     } catch (error) {
-      alert('Error submitting quiz');
+      alert("Error submitting quiz");
       setIsSubmitting(false);
     }
   };

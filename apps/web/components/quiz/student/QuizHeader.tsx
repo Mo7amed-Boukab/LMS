@@ -1,4 +1,3 @@
-// components/quiz/QuizHeader.tsx
 import { CheckCircle } from 'lucide-react';
 
 interface QuizHeaderProps {

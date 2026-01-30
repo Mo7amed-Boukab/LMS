@@ -1,4 +1,3 @@
-// components/quiz/QuizQuestion.tsx
 'use client';
 
 interface QuizQuestionProps {
