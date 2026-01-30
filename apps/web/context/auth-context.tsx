@@ -1,21 +1,21 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import { useRouter } from "next/navigation";
-import {
-  authService,
-  User,
-  LoginCredentials,
-  RegisterData,
-  Role,
+    authService,
+    LoginCredentials,
+    RegisterData,
+    Role,
+    User,
 } from "@/lib/auth-service";
 import { tokenStorage } from "@/lib/token-storage";
+import { useRouter } from "next/navigation";
+import {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -44,9 +44,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userProfile = await authService.getProfile();
         setUser(userProfile);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch profile:", error);
         tokenStorage.remove();
+        if (error.message === "Unauthorized" || error.message?.includes("401")) {
+          router.push("/login");
+        }
       } finally {
         setIsLoading(false);
       }

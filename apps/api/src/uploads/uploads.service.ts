@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { FileUpload, FileUploadDocument } from './schemas/file-upload.schema';
 import * as fs from 'fs';
+import { Model } from 'mongoose';
 import * as path from 'path';
+import { FileUpload, FileUploadDocument } from './schemas/file-upload.schema';
 
 interface SaveFileMetadataDto {
   filename: string;
@@ -30,7 +30,7 @@ export class UploadsService {
     await fileUpload.save();
 
     // Return public URL
-    const baseUrl = process.env.API_URL || 'http://localhost:3000';
+    const baseUrl = process.env.API_URL || 'http://localhost:4000';
     const publicPath = data.path.replace(/\\/g, '/');
 
     return {

@@ -29,6 +29,10 @@ export interface Quiz {
   };
   title: string;
   passingScore: number;
+  timeLimit: number;
+  maxAttempts: number;
+  shuffleQuestions: boolean;
+  showResultsImmediately: boolean;
   status: QuizStatus;
   questions: Question[];
   createdAt?: string;
@@ -39,6 +43,10 @@ export interface CreateQuizDto {
   moduleId: string;
   title: string;
   passingScore: number;
+  timeLimit?: number;
+  maxAttempts?: number;
+  shuffleQuestions?: boolean;
+  showResultsImmediately?: boolean;
 }
 
 export interface CreateQuestionDto {

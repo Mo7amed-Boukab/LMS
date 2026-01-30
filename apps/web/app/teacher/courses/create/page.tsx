@@ -1,32 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { teacherCourseService } from "@/lib/services/teacher-course.service";
 import {
-  Save,
   ArrowLeft,
+  Check,
+  ChevronDown,
+  Edit,
+  Eye,
+  FileText,
+  GripVertical,
+  Image as ImageIcon,
   Layout,
   List,
-  Settings,
-  Image as ImageIcon,
-  Plus,
-  GripVertical,
-  X,
-  UploadCloud,
-  ChevronDown,
-  Eye,
-  Check,
-  Trash2,
-  Edit,
   Loader2,
-  FileText,
+  Plus,
+  Save,
+  Settings,
+  Trash2,
+  UploadCloud,
   Video,
-  ChevronUp,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import { teacherCourseService } from "@/lib/services/teacher-course.service";
 
 const categories = [
   "Design",
@@ -35,6 +34,10 @@ const categories = [
   "Data Science",
   "Business",
   "Finance",
+  "Photography",
+  "Music",
+  "Personal Development",
+  "Health & Fitness",
 ];
 const levels = ["Beginner", "Intermediate", "Advanced", "All Levels"];
 
@@ -137,13 +140,7 @@ export default function CreateCoursePage() {
   const [promotionalVideo, setPromotionalVideo] = useState("");
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
 
-  const [sections, setSections] = useState<LocalSection[]>([
-    {
-      id: 1,
-      title: "Introduction",
-      lessons: [{ id: 1, title: "Welcome to the course", type: "VIDEO" }],
-    },
-  ]);
+  const [sections, setSections] = useState<LocalSection[]>([]);
 
   // Helper to fix backend URLs if they have the wrong port
   const getMediaUrl = (url?: string) => {
@@ -169,10 +166,47 @@ export default function CreateCoursePage() {
       return;
     }
 
+    // Frontend Validation for Publishing
+    if (!asDraft) {
+      if (!description) {
+        toast.error("Cannot publish: Description is required.");
+        return;
+      }
+      if (!level) {
+        toast.error("Cannot publish: Level is required.");
+        return;
+      }
+      if (!thumbnail) {
+        toast.error("Cannot publish: Course thumbnail is required.");
+        return;
+      }
+
+      if (sections.length === 0) {
+        toast.error("Cannot publish: You must add at least one module (section).");
+        return;
+      }
+      
+      for (const section of sections) {
+         if (section.lessons.length === 0) {
+            toast.error(`Cannot publish: Section "${section.title}" has no lessons.`);
+            return;
+         }
+         // Validate lessons have content
+         for (const lesson of section.lessons) {
+             if (!lesson.contentUrl) { // Check if file is uploaded
+                 toast.error(`Cannot publish: Lesson "${lesson.title}" in section "${section.title}" has no content uploaded.`);
+                 return;
+             }
+         }
+      }
+    }
+
     setIsSaving(true);
     try {
-      // 1. Create or Update Course
       let currentCourseId = courseId;
+      
+      const initialStatus = (asDraft || !currentCourseId) ? "draft" : "published"; 
+      
       const courseData = {
         title,
         description,
@@ -183,30 +217,30 @@ export default function CreateCoursePage() {
         hasCertificate,
         thumbnail,
         promotionalVideo,
-        status: asDraft ? "draft" : "published",
-      } as const; // Only send valid fields
+        status: initialStatus,
+      } as const;
 
+      // 2. Create or Update Course (Initial Step)
       if (!currentCourseId) {
+        // Create new course (always as draft first if intend to publish)
         const newCourse = await teacherCourseService.createCourse({
           ...courseData,
-          status: asDraft ? "draft" : "published",
+          status: "draft" // Force draft for creation
         });
         currentCourseId = newCourse._id;
         setCourseId(newCourse._id);
-        if (asDraft) {
-          toast.success("Course draft created");
-        } else {
-          toast.success("Course published");
-        }
+        if (asDraft) toast.success("Course draft created");
       } else {
-        await teacherCourseService.updateCourse(currentCourseId, {
-          ...courseData,
-          status: asDraft ? "draft" : "published",
-        });
+        // Update existing course
+        // If we are publishing, we defer the status update to AFTER content sync
+        const updateData = { ...courseData };
+        if (!asDraft) updateData.status = "draft"; // Keep draft while syncing content
+
+        await teacherCourseService.updateCourse(currentCourseId, updateData);
         if (asDraft) toast.success("Course saved");
       }
 
-      // 2. Sync Sections (Modules)
+      // 3. Sync Sections (Modules) & Lessons
       const updatedSections = [...sections];
 
       for (let i = 0; i < updatedSections.length; i++) {
@@ -221,16 +255,16 @@ export default function CreateCoursePage() {
             order: i + 1,
           });
           moduleId = newModule._id;
-          updatedSections[i]._id = moduleId; // Update local state with backend ID
+          updatedSections[i]._id = moduleId;
         } else {
-          // Update Module (Title/Order)
+          // Update Module
           await teacherCourseService.updateModule(moduleId, {
             title: section.title,
             order: i + 1,
           });
         }
 
-        // 3. Sync Lessons
+        // Sync Lessons
         const updatedLessons = [...section.lessons];
         for (let j = 0; j < updatedLessons.length; j++) {
           const lesson = updatedLessons[j];
@@ -242,7 +276,7 @@ export default function CreateCoursePage() {
               moduleId: moduleId!,
               title: lesson.title,
               type: lesson.type || "VIDEO",
-              contentUrl: lesson.contentUrl || "https://example.com", // Placeholder if empty
+              contentUrl: lesson.contentUrl || "", // No fake default for real usage
               order: j + 1,
               isActive: true,
               isPreview: lesson.isPreview || false,
@@ -264,9 +298,13 @@ export default function CreateCoursePage() {
       setSections(updatedSections);
 
       if (!asDraft) {
+        await teacherCourseService.updateCourse(currentCourseId!, {
+            status: "published"
+        });
         toast.success("Course published successfully!");
         router.push("/teacher/courses");
       }
+
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || "Failed to save course");

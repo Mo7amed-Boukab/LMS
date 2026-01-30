@@ -11,13 +11,30 @@ export const apiClient = {
     });
 
     if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(error.message || "Request failed");
+      let errorMessage = "Request failed";
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        try {
+          errorMessage = await response.text();
+        } catch (textError) {
+          errorMessage = `Request failed with status ${response.status}`;
+        }
+      }
+
+      if (response.status === 401) {
+        console.warn("Unauthorized request to:", endpoint);
+      }
+
+      throw new Error(errorMessage || "Request failed");
     }
 
-    return response.json();
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return response.json();
+    }
+    return response.text() as unknown as T;
   },
 
   get<T>(endpoint: string, options?: RequestInit) {

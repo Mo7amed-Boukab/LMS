@@ -54,6 +54,12 @@ export const teacherCourseService = {
     });
   },
 
+  getAllCourses: async (): Promise<Course[]> => {
+    return apiClient.get<Course[]>("/courses", {
+      headers: getHeaders(),
+    });
+  },
+
   getCourse: async (id: string): Promise<Course> => {
     return apiClient.get<Course>(`/courses/${id}`, {
       headers: getHeaders(),
@@ -64,6 +70,13 @@ export const teacherCourseService = {
     return apiClient.request<Course>(`/courses/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
+      headers: getHeaders(),
+    });
+  },
+
+  deleteCourse: async (id: string): Promise<void> => {
+    return apiClient.request<void>(`/courses/${id}`, {
+      method: "DELETE",
       headers: getHeaders(),
     });
   },

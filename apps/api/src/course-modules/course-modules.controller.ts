@@ -1,24 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Req,
-  UseGuards,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Req,
+    UseGuards,
 } from '@nestjs/common';
 
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import type { AuthenticatedRequest } from 'src/common/interfaces/request-with-user.interface';
 import { CourseModulesService } from './course-modules.service';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
 import { Module as CourseModuleEntity } from './schemas/course-module.schema';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import type { AuthenticatedRequest } from 'src/common/interfaces/request-with-user.interface';
 
 @Controller('course-modules')
-@UseGuards(JwtAuthGuard)
 export class CourseModulesController {
   constructor(private readonly courseModulesService: CourseModulesService) {}
 
@@ -26,6 +25,7 @@ export class CourseModulesController {
   /*                               CREATE MODULE                                  */
   /* -------------------------------------------------------------------------- */
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(
     @Body() createDto: CreateCourseModuleDto,
     @Req() req: AuthenticatedRequest,
@@ -37,7 +37,18 @@ export class CourseModulesController {
   /*                          GET MODULES BY COURSE                                */
   /* -------------------------------------------------------------------------- */
   @Get('course/:courseId')
+  @UseGuards(JwtAuthGuard)
   getCourseModules(
+    @Param('courseId') courseId: string,
+  ): Promise<CourseModuleEntity[]> {
+    return this.courseModulesService.getModulesByCourse(courseId);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                      GET PUBLIC MODULES BY COURSE                             */
+  /* -------------------------------------------------------------------------- */
+  @Get('public/course/:courseId')
+  getPublicCourseModules(
     @Param('courseId') courseId: string,
   ): Promise<CourseModuleEntity[]> {
     return this.courseModulesService.getModulesByCourse(courseId);
@@ -47,6 +58,7 @@ export class CourseModulesController {
   /*                               GET ONE MODULE                                  */
   /* -------------------------------------------------------------------------- */
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string): Promise<CourseModuleEntity> {
     return this.courseModulesService.findOne(id);
   }
@@ -55,6 +67,7 @@ export class CourseModulesController {
   /*                               UPDATE MODULE                                   */
   /* -------------------------------------------------------------------------- */
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
     @Body() updateDto: UpdateCourseModuleDto,
@@ -67,6 +80,7 @@ export class CourseModulesController {
   /*                             REORDER MODULES                                  */
   /* -------------------------------------------------------------------------- */
   @Patch('course/:courseId/reorder')
+  @UseGuards(JwtAuthGuard)
   async reorder(
     @Param('courseId') courseId: string,
     @Body() moduleIds: string[],
@@ -79,6 +93,7 @@ export class CourseModulesController {
   /*                               DELETE MODULE                                   */
   /* -------------------------------------------------------------------------- */
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   async remove(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
