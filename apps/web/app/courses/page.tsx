@@ -16,7 +16,18 @@ import Header from "../../components/layout/Header";
 import { getMediaUrl } from "../../lib/media";
 import { Course, courseApi, CourseFilters } from "../../lib/services/courseService";
 
-const CATEGORIES = ["Development", "Design", "Marketing", "Data Science", "Business", "Finance"];
+const CATEGORIES = [
+  "Development",
+  "Design",
+  "Marketing",
+  "Data Science",
+  "Business",
+  "Finance",
+  "Photography",
+  "Music",
+  "Personal Development",
+  "Health & Fitness",
+];
 
 // --- Components ---
 
@@ -127,8 +138,18 @@ export default function CoursesPage() {
   // Sync from URL search params
   useEffect(() => {
     const search = searchParams.get("search");
-    if (search) {
-      setFilters(prev => ({ ...prev, search, page: 1 }));
+    const categoryParam = searchParams.get("category");
+
+    if (search || categoryParam) {
+      setFilters(prev => {
+        const next = { ...prev, page: 1 };
+        if (search) next.search = search;
+        if (categoryParam) {
+          next.category = categoryParam;
+          setSelectedCategories(categoryParam.split(','));
+        }
+        return next;
+      });
     }
   }, [searchParams]);
 

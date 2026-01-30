@@ -21,6 +21,10 @@ export class Course {
       'Data Science',
       'Business',
       'Finance',
+      'Photography',
+      'Music',
+      'Personal Development',
+      'Health & Fitness',
     ],
   })
   category: string;

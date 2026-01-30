@@ -522,7 +522,7 @@ export default function CourseDetailsPage() {
                       </div>
                     </div>
                   </div>
-F                </div>
+               </div>
               )}
 
                {/* Reviews Section */}
