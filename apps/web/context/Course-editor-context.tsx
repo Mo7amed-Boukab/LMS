@@ -1,18 +1,18 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import {
-  Course,
-  CourseModule,
-  CourseLesson,
-  teacherCourseService,
+    Course,
+    CourseLesson,
+    CourseModule,
+    teacherCourseService,
 } from "@/lib/services/teacher-course.service";
+import {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 import { toast } from "sonner";
 
 interface CourseEditorContextType {
@@ -156,13 +156,6 @@ export function CourseEditorProvider({
   };
 
   const deleteModule = async (moduleId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this section and all its lessons?"
-      )
-    )
-      return;
-
     setIsSaving(true);
     try {
       await teacherCourseService.deleteModule(moduleId);
@@ -228,8 +221,6 @@ export function CourseEditorProvider({
   };
 
   const deleteLesson = async (lessonId: string) => {
-    if (!confirm("Are you sure you want to delete this lesson?")) return;
-
     setIsSaving(true);
     try {
       await teacherCourseService.deleteLesson(lessonId);

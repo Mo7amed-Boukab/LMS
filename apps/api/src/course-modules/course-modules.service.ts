@@ -1,18 +1,18 @@
 import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  ForbiddenException,
+    BadRequestException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 
-import {
-  Module as CourseModuleEntity,
-  CourseModuleDocument,
-} from './schemas/course-module.schema';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
+import {
+    CourseModuleDocument,
+    Module as CourseModuleEntity,
+} from './schemas/course-module.schema';
 
 import { Course, CourseDocument } from 'src/courses/schemas/course.schema';
 
@@ -76,8 +76,9 @@ export class CourseModulesService {
 
     return this.courseModuleModel
       .find({ courseId: new Types.ObjectId(courseId), isActive: true })
+      .populate('lessons')
       .sort({ order: 1 })
-      .lean()
+      .lean({ virtuals: true })
       .exec();
   }
 

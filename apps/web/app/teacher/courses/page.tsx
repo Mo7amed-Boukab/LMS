@@ -1,93 +1,37 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
 import {
+  teacherCourseService,
+  type Course,
+} from "@/lib/services/teacher-course.service";
+import {
+  Check,
+  ChevronDown,
+  Edit,
+  Eye,
+  Loader2,
+  MoreVertical,
   Plus,
   Search,
-  ChevronDown,
-  MoreVertical,
-  Edit,
   Trash2,
-  Eye,
-  Check,
 } from "lucide-react";
 import Link from "next/link";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-
-// --- Mock Data ---
-const courses = [
-  {
-    id: 1,
-    title: "Introduction to UX Design",
-    category: "Design",
-    students: 317,
-    price: 49.99,
-    status: "Published",
-    image:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=100&auto=format&fit=crop&q=60",
-  },
-  {
-    id: 2,
-    title: "Advanced Python",
-    category: "Development",
-    students: 148,
-    price: 89.99,
-    status: "Published",
-    image:
-      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100&auto=format&fit=crop&q=60",
-  },
-  {
-    id: 3,
-    title: "Digital Marketing 101",
-    category: "Marketing",
-    students: 0,
-    price: 29.99,
-    status: "Draft",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&auto=format&fit=crop&q=60",
-  },
-  {
-    id: 4,
-    title: "Data Science Bootcamp",
-    category: "Data",
-    students: 84,
-    price: 129.99,
-    status: "Published",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&auto=format&fit=crop&q=60",
-  },
-  {
-    id: 5,
-    title: "Project Management",
-    category: "Business",
-    students: 207,
-    price: 59.99,
-    status: "Archived",
-    image:
-      "https://images.unsplash.com/photo-1507537297725-24a1c434c67b?w=100&auto=format&fit=crop&q=60",
-  },
-  {
-    id: 6,
-    title: "React & Next.js Masterclass",
-    category: "Development",
-    students: 423,
-    price: 99.99,
-    status: "Published",
-    image:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=100&auto=format&fit=crop&q=60",
-  },
-];
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const categories = [
   "All Categories",
   "Design",
   "Development",
   "Marketing",
-  "Data",
+  "Data Science",
   "Business",
   "Finance",
 ];
-const statuses = ["All Status", "Published", "Draft", "Archived"];
+const statuses = ["All Status", "published", "draft", "archived"];
 
 // --- Components ---
 
@@ -156,13 +100,21 @@ function CustomDropdown({
   );
 }
 
-function ActionMenu() {
+function ActionMenu({ courseId }: { courseId: string }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -170,38 +122,140 @@ function ActionMenu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <div className="relative" ref={menuRef}>
+    <>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleToggle}
         className="text-gray-400 hover:text-gray-600 p-1.5 rounded-md hover:bg-gray-100 transition-colors"
       >
         <MoreVertical size={16} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-100 rounded-md shadow-lg z-50 py-1.5 px-1">
-          <button className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md flex items-center gap-3 transition-colors">
-            <Eye size={16} /> View
-          </button>
-          <button className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md flex items-center gap-3 transition-colors">
-            <Edit size={16} /> Edit
-          </button>
-          <button className="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-md flex items-center gap-3 transition-colors">
-            <Trash2 size={16} /> Delete
-          </button>
-        </div>
+        <>
+          {/* Invisible backdrop to close dropdown */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Dropdown menu - using fixed positioning */}
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: `${menuPosition.top}px`,
+              right: `${menuPosition.right}px`,
+            }}
+            className="w-40 bg-white border border-gray-100 rounded-md shadow-lg z-50 py-1.5 px-1"
+          >
+            <button
+              onClick={() => {
+                router.push(`/teacher/courses/${courseId}`);
+                setIsOpen(false);
+              }}
+              className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md flex items-center gap-3 transition-colors"
+            >
+              <Eye size={16} /> View
+            </button>
+            <button
+              onClick={() => {
+                router.push(`/teacher/courses/${courseId}/edit`);
+                setIsOpen(false);
+              }}
+              className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md flex items-center gap-3 transition-colors"
+            >
+              <Edit size={16} /> Edit
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const deleteEvent = new CustomEvent("delete-course", {
+                  detail: { courseId },
+                });
+                window.dispatchEvent(deleteEvent);
+                setIsOpen(false);
+              }}
+              className="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-md flex items-center gap-3 transition-colors"
+            >
+              <Trash2 size={16} /> Delete
+            </button>
+          </div>
+        </>
       )}
-    </div>
+    </>
   );
 }
 
-// --- Main Page ---
-
 export default function CoursesPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedStatus, setSelectedStatus] = useState("All Status");
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch courses on mount
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  // Listen for delete events from ActionMenu
+  useEffect(() => {
+    const handleDeleteCourse = (event: Event) => {
+      const customEvent = event as CustomEvent<{ courseId: string }>;
+      setCourseToDelete(customEvent.detail.courseId);
+      setDeleteModalOpen(true);
+    };
+
+    window.addEventListener("delete-course", handleDeleteCourse);
+    return () => window.removeEventListener("delete-course", handleDeleteCourse);
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setIsLoading(true);
+      const data = await teacherCourseService.getAllCourses();
+      setCourses(data);
+    } catch (error: any) {
+      console.error("Failed to fetch courses:", error);
+      toast.error(error.message || "Failed to load courses");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!courseToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await teacherCourseService.deleteCourse(courseToDelete);
+      toast.success("Course deleted successfully");
+      setCourses(courses.filter((c) => c._id !== courseToDelete));
+      setDeleteModalOpen(false);
+      setCourseToDelete(null);
+    } catch (error: any) {
+      console.error("Failed to delete course:", error);
+      toast.error(error.message || "Failed to delete course");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch = course.title
@@ -214,6 +268,38 @@ export default function CoursesPage() {
       selectedStatus === "All Status" || course.status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  // Helper to get status display
+  const getStatusDisplay = (status: string) => {
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  // Helper to get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "published":
+        return "text-green-700";
+      case "draft":
+        return "text-red-700";
+      case "archived":
+        return "text-gray-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  // Helper for thumbnail URL
+  const getThumbnailUrl = (thumbnail?: string) => {
+    if (!thumbnail) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100&auto=format&fit=crop&q=60";
+    
+    if (thumbnail.includes("localhost:3000/uploads")) {
+        return thumbnail.replace("localhost:3000", "localhost:4000");
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+    if (thumbnail.startsWith("http")) return thumbnail;
+    return `${apiUrl}/${thumbnail.startsWith("/") ? thumbnail.slice(1) : thumbnail}`;
+  };
 
   return (
     <>
@@ -269,126 +355,121 @@ export default function CoursesPage() {
         </div>
 
         {/* Table View */}
-        <div className="bg-white rounded-md border border-gray-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50/50">
-                <tr>
-                  <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Course Name
-                  </th>
-                  <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Enrolled
-                  </th>
-                  <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-right py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredCourses.map((course) => (
-                  <tr
-                    key={course.id}
-                    className="hover:bg-gray-50/50 transition-colors group"
-                  >
-                    <td className="py-4 px-5">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="h-10 w-10 rounded-md bg-gray-100 bg-cover bg-center shrink-0"
-                          style={{ backgroundImage: `url(${course.image})` }}
-                        ></div>
-                        <div>
-                          <h4 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
-                            {course.title}
-                          </h4>
-                          <span className="text-xs text-gray-400">
-                            ID: #C-{1024 + course.id}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-5">
-                      <span className="text-sm text-gray-600">
-                        {course.category}
-                      </span>
-                    </td>
-                    <td className="py-4 px-5">
-                      {course.students > 0 ? (
-                        <div className="flex items-center gap-1.5">
-                          <div className="flex -space-x-2">
-                            {[...Array(Math.min(3, course.students))].map(
-                              (_, i) => (
-                                <div
-                                  key={i}
-                                  className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white"
-                                ></div>
-                              )
-                            )}
-                          </div>
-                          <span className="text-xs text-gray-500">
-                            +{course.students}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400 italic">
-                          No enrollments yet
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-5">
-                      <span className="text-sm font-medium text-gray-900">
-                        ${course.price}
-                      </span>
-                    </td>
-                    <td className="py-4 px-5">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                          course.status === "Published"
-                            ? "text-green-700"
-                            : course.status === "Draft"
-                              ? "text-red-700"
-                              : "text-gray-600"
-                        }`}
-                      >
-                        {course.status}
-                      </span>
-                    </td>
-                    <td className="py-4 px-5 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <ActionMenu />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-xs text-gray-500">
-              Showing {filteredCourses.length} of {courses.length} courses
-            </span>
-            <div className="flex gap-2">
-              <button className="px-3 py-1.5 text-xs border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 transition-colors">
-                Previous
-              </button>
-              <button className="px-3 py-1.5 text-xs border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 transition-colors">
-                Next
-              </button>
+        <div className="bg-white rounded-md border border-gray-100 min-h-[400px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={32} className="animate-spin text-red-600" />
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50/50">
+                    <tr>
+                      <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Course Name
+                      </th>
+                      <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="text-left py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="text-right py-3 px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {filteredCourses.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-12 text-center">
+                          <p className="text-sm text-gray-500">
+                            No courses found. Create your first course!
+                          </p>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredCourses.map((course) => (
+                        <tr
+                          key={course._id}
+                          className="hover:bg-gray-50/50 transition-colors group"
+                        >
+                          <td className="py-4 px-5">
+                            <div className="flex items-center gap-3">
+                                <div
+                                className="h-10 w-10 rounded-md bg-gray-100 bg-cover bg-center shrink-0"
+                                style={{
+                                  backgroundImage: `url('${getThumbnailUrl(course.thumbnail)}')`,
+                                }}
+                              ></div>
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                                  {course.title}
+                                </h4>
+                                <span className="text-xs text-gray-400">
+                                  ID: #{course._id.slice(-6)}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="text-sm text-gray-600">
+                              {course.category}
+                            </span>
+                          </td>
+                          <td className="py-4 px-5">
+                            <span className="text-sm font-medium text-gray-900">
+                              ${course.price || 0}
+                            </span>
+                          </td>
+                          <td className="py-4 px-5">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                course.status
+                              )}`}
+                            >
+                              {getStatusDisplay(course.status)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-5 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <ActionMenu courseId={course._id} />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="p-4 border-t border-gray-100 flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  Showing {filteredCourses.length} of {courses.length} courses
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setCourseToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Course"
+        message="Are you sure you want to delete this course? This action cannot be undone and will remove all associated modules and lessons."
+        isDeleting={isDeleting}
+      />
     </>
   );
 }

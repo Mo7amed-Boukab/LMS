@@ -1,28 +1,143 @@
+"use client";
+
+import { useAuth } from "@/context/auth-context";
 import {
-  Star,
-  Clock,
-  BarChart,
-  Globe,
-  RefreshCw,
-  CheckCircle,
-  PlayCircle,
-  Lock,
-  FileText,
-  Monitor,
-  Download,
-  Infinity,
-  Smartphone,
+  AlertCircle,
   Award,
-  Share2,
+  BarChart,
+  BookOpen,
+  ChevronDown,
+  Clock,
+  Download,
+  FileText,
   Gift,
+  Globe,
+  Infinity,
+  Lock,
+  Monitor,
   Play,
+  PlayCircle,
+  RefreshCw,
+  Share2,
+  Star,
   Users,
+  Video
 } from "lucide-react";
 import Link from "next/link";
-import Header from "../../../components/layout/Header";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import Footer from "../../../components/layout/Footer";
+import Header from "../../../components/layout/Header";
+import { getMediaUrl } from "../../../lib/media";
+import { Course, courseApi, CourseLesson, CourseModule } from "../../../lib/services/courseService";
 
 export default function CourseDetailsPage() {
+  const params = useParams();
+  const router = useRouter();
+  const slug = params.slug as string;
+  const { isAuthenticated } = useAuth();
+
+  const [course, setCourse] = useState<Course | null>(null);
+  const [modules, setModules] = useState<CourseModule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isPlayingPromo, setIsPlayingPromo] = useState(false);
+  
+  const [selectedLesson, setSelectedLesson] = useState<CourseLesson | null>(null);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      if (!slug) return;
+      try {
+        setLoading(true);
+        const [courseData, curriculumData] = await Promise.all([
+          courseApi.getByIdPublic(slug),
+          courseApi.getCurriculum(slug)
+        ]);
+        setCourse(courseData);
+        setModules(curriculumData);
+      } catch (err) {
+        console.error("Failed to load course details:", err);
+        setError("Failed to load course details. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [slug]);
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return null;
+    // YouTube
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const youtubeMatch = url.match(youtubeRegex);
+    if (youtubeMatch && youtubeMatch[1]) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1`;
+    }
+    return null;
+  };
+
+  const handleLessonSelect = (lesson: CourseLesson) => {
+      if (!isAuthenticated) {
+          toast.error("You must be logged in to view lesson content");
+          return;
+      }
+
+      if (selectedLesson?._id === lesson._id) {
+          setSelectedLesson(null);
+      } else {
+          setSelectedLesson(lesson);
+          // Mark as read immediately when selected/viewed
+          if (!completedLessons.includes(lesson._id)) {
+              setCompletedLessons(prev => [...prev, lesson._id]);
+          }
+      }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-white">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !course) {
+    return (
+      <div className="flex flex-col min-h-screen bg-white">
+        <Header />
+        <div className="flex-grow flex flex-col items-center justify-center p-4">
+          <AlertCircle size={48} className="text-red-500 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Course not found</h1>
+          <p className="text-gray-600 mb-6">{error || "The course you are looking for does not exist."}</p>
+          <Link href="/courses" className="bg-red-700 text-white px-6 py-2 rounded-md hover:bg-red-800 transition-colors">
+            Browse Courses
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Calculate stats
+  const totalLessons = modules.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0);
+  const totalDurationMinutes = totalLessons * 15; // Assumption: 15 min per lesson
+  const totalHours = Math.floor(totalDurationMinutes / 60);
+  const remainingMinutes = totalDurationMinutes % 60;
+  const thumbnailUrl = getMediaUrl(course.thumbnail);
+  
+  // Price formatting
+  const originalPrice = course.price * 1.2; // +20%
+  const discountPercentage = 20; // Fixed as requested based on math logic
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Header />
@@ -33,8 +148,7 @@ export default function CourseDetailsPage() {
           <div
             className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
             style={{
-              backgroundImage:
-                "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBrVLh01DohL903CxyBu7x05LYNSmwKyQmzgl8F385wGj3FOzVBHlTEYfq5q1JtxkJ_H8QR848NaBu3B8V5KuFupCkI-ZbAeA09b29SANUun7bUDTUdtP1JWSjELV2naFhiDPcCThwsFMsuGnbtgaI3TldHazP72RcgxncEm89Ox2itm4fSHxtiy7_-r6J4PQlcuW4Hwoi6z34a9Y9USf1VGotfwEgstpiJYW7ojZX8BW250lnTaUE8wAxfvapaZGKDictWCKXZgEIF')",
+              backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBrVLh01DohL903CxyBu7x05LYNSmwKyQmzgl8F385wGj3FOzVBHlTEYfq5q1JtxkJ_H8QR848NaBu3B8V5KuFupCkI-ZbAeA09b29SANUun7bUDTUdtP1JWSjELV2naFhiDPcCThwsFMsuGnbtgaI3TldHazP72RcgxncEm89Ox2itm4fSHxtiy7_-r6J4PQlcuW4Hwoi6z34a9Y9USf1VGotfwEgstpiJYW7ojZX8BW250lnTaUE8wAxfvapaZGKDictWCKXZgEIF')",
             }}
           ></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-12">
@@ -45,28 +159,26 @@ export default function CourseDetailsPage() {
                   className="hover:text-white transition-colors"
                   href="/courses"
                 >
-                  Design
+                  Courses
                 </Link>
                 <span>›</span>
-                <span className="text-white">UI/UX Design Masterclass</span>
+                <span className="text-white">{course.category || "General"}</span>
               </div>
 
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight tracking-tight mb-6">
-                UI/UX Design Masterclass: From Beginner to Pro
+                {course.title}
               </h1>
               <p className="text-lg text-gray-300 mb-8 max-w-2xl leading-relaxed">
-                Master the art of user interface and user experience design with
-                this comprehensive course. Learn Figma, prototyping,
-                wireframing, and design theory.
+                {course.description.length > 150 ? course.description.substring(0, 150) + "..." : course.description}
               </p>
               <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300 mb-8">
                 <div className="flex items-center gap-2">
                   <Clock size={20} />
-                  <span>24 Weeks</span>
+                  <span>{totalHours > 0 ? `${totalHours} Hours` : "Coming Soon"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <BarChart size={20} />
-                  <span>All Levels</span>
+                  <span>{course.level}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Globe size={20} />
@@ -74,7 +186,7 @@ export default function CourseDetailsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <RefreshCw size={20} />
-                  <span>Last updated May 2024</span>
+                  <span>Last updated {new Date(course.updatedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-4 mb-6">
                   <span className="bg-[#f6c344] text-black text-xs font-bold px-2 py-0.5 rounded-[3px]">
@@ -92,33 +204,19 @@ export default function CourseDetailsPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-3">
-                  <img
-                    alt="Instructor Sarah"
-                    className="w-10 h-10 rounded-full border-2 border-[#1a1a1a] object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDOD5bgnQpHIMPuXv_HPYVGkPT_Rq4_NGDMYF-yg9eIvfIv8P923ZPOl6MvLovfLo-gdHysnRxqtxveoKshOqpc4E230-E1gDzV62xUsaLPA8lKDrfQlIY1naI7CnAv2bcJ92nzWVyGk-ZcfKxaFAav0x_It1TUhM0p6K_ddMtAMKVaj-Edjz_qJxTqrHQnBiYRkSSqfNGamCcNom0ylAP4EpfJ4q6xoTycTKTJ0BmGL-T9QSFMctYatvV_017k-RcfFv980iWmOrh"
-                  />
-                  <img
-                    alt="Instructor Mike"
-                    className="w-10 h-10 rounded-full border-2 border-[#1a1a1a] object-cover"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7Olvg3abarBhjBaAFObOABsJzhdIzdgR9I7I-eP1chn0uVhZQoRIv2jLLlvmARiG5PITNg8Rgdqse7P8cbBRpfMNOwwvrfAuwucw4fKveKPpwKaIL9K9Pqb9BRXXCelcdG1UVyVXNYPZ6xVs6HLXBTwlhOSxIwckQHPKysQ8y-rZTGoAjfv2UXd3vvSzYvkyfhb0O92G4qIKaon5Lt17a0wobXtx4TAFKdch37JZc1ur-kliUPEtH62U8-I-OXRzxNGURTs1jzq_V"
-                  />
+                  <div className="w-10 h-10 rounded-full border-2 border-[#1a1a1a] bg-red-700 flex items-center justify-center text-white font-bold text-xs">
+                    {course.instructorId.firstName.charAt(0)}{course.instructorId.lastName.charAt(0)}
+                  </div>
                 </div>
                 <div>
                   <p className="text-sm text-gray-300">
                     Created by{" "}
-                    <a
+                    <button
                       className="text-white font-bold hover:underline"
-                      href="#"
+                      onClick={() => setActiveTab("instructor")}
                     >
-                      Sarah Jenkins
-                    </a>{" "}
-                    &{" "}
-                    <a
-                      className="text-white font-bold hover:underline"
-                      href="#"
-                    >
-                      Mike Chen
-                    </a>
+                      {course.instructorId.firstName} {course.instructorId.lastName}
+                    </button>
                   </p>
                 </div>
               </div>
@@ -134,323 +232,432 @@ export default function CourseDetailsPage() {
               {/* Tabs Navigation */}
               <div className="sticky top-16 z-30 bg-white/95 backdrop-blur-sm border-b border-[#f4f0f1] mb-8">
                 <div className="flex overflow-x-auto no-scrollbar gap-8">
-                  <a
-                    className="whitespace-nowrap py-4 border-b-[3px] border-[#cb1030] text-[#cb1030] font-bold text-sm"
-                    href="#overview"
+                  <button
+                    onClick={() => setActiveTab("overview")}
+                    className={`whitespace-nowrap py-4 border-b-[3px] font-bold text-sm ${activeTab === 'overview' ? 'border-[#cb1030] text-[#cb1030]' : 'border-transparent text-[#896168] hover:text-[#181112]'}`}
                   >
                     Overview
-                  </a>
-                  <a
-                    className="whitespace-nowrap py-4 border-b-[3px] border-transparent text-[#896168] hover:text-[#181112] transition-colors font-bold text-sm"
-                    href="#curriculum"
+                  </button>
+                  <button
+                     onClick={() => setActiveTab("curriculum")}
+                    className={`whitespace-nowrap py-4 border-b-[3px] font-bold text-sm ${activeTab === 'curriculum' ? 'border-[#cb1030] text-[#cb1030]' : 'border-transparent text-[#896168] hover:text-[#181112]'}`}
                   >
                     Curriculum
-                  </a>
-                  <a
-                    className="whitespace-nowrap py-4 border-b-[3px] border-transparent text-[#896168] hover:text-[#181112] transition-colors font-bold text-sm"
-                    href="#instructor"
+                  </button>
+                  <button
+                     onClick={() => setActiveTab("instructor")}
+                    className={`whitespace-nowrap py-4 border-b-[3px] font-bold text-sm ${activeTab === 'instructor' ? 'border-[#cb1030] text-[#cb1030]' : 'border-transparent text-[#896168] hover:text-[#181112]'}`}
                   >
                     Instructor
-                  </a>
-                  <a
-                    className="whitespace-nowrap py-4 border-b-[3px] border-transparent text-[#896168] hover:text-[#181112] transition-colors font-bold text-sm"
-                    href="#reviews"
+                  </button>
+                  <button
+                     onClick={() => setActiveTab("reviews")}
+                    className={`whitespace-nowrap py-4 border-b-[3px] font-bold text-sm ${activeTab === 'reviews' ? 'border-[#cb1030] text-[#cb1030]' : 'border-transparent text-[#896168] hover:text-[#181112]'}`}
                   >
                     Reviews
-                  </a>
+                  </button>
                 </div>
               </div>
 
               {/* Overview Section */}
-              <div className="mb-12 scroll-mt-32" id="overview">
-                <h2 className="text-2xl font-bold mb-6 text-[#181112]">
-                  About this course
-                </h2>
-                <div className="prose prose-lg text-[#896168] mb-8">
-                  <p>
-                    This masterclass is designed to take you from a complete
-                    beginner to a job-ready UI/UX designer. We focus heavily on
-                    the "why" behind design decisions, not just the tools. You
-                    will learn to conduct user research, create wireframes,
-                    design high-fidelity mockups, and build interactive
-                    prototypes.
-                  </p>
-                </div>
-                {/* What you'll learn card */}
-                <div className="bg-[#f4f0f1] rounded-md p-6 lg:p-8 border border-gray-100">
-                  <h3 className="text-lg font-bold mb-4 text-[#181112]">
-                    What you'll learn
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      "Master Figma for UI design and prototyping",
-                      "Understand User Experience (UX) principles",
-                      "Build a professional design portfolio",
-                      "Conduct user research and usability testing",
-                      "Learn to hand off designs to developers",
-                      "Design systems and component libraries",
-                    ].map((item, i) => (
-                      <div key={i} className="flex gap-3 items-start">
-                        <CheckCircle
-                          className="text-[#cb1030] mt-0.5"
-                          size={20}
-                        />
-                        <span className="text-sm text-[#181112]">{item}</span>
-                      </div>
-                    ))}
+              {activeTab === "overview" && (
+                <div className="mb-12 animate-fadeIn">
+                  <h2 className="text-2xl font-bold mb-6 text-[#181112]">
+                    About this course
+                  </h2>
+                  <div className="prose prose-lg text-[#896168] mb-8">
+                    <p className="whitespace-pre-line">{course.description}</p>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Curriculum Section */}
-              <div className="mb-12 scroll-mt-32" id="curriculum">
-                <div className="flex justify-between items-end mb-6">
-                  <h2 className="text-2xl font-bold text-[#181112]">
-                    Course Curriculum
-                  </h2>
-                  <span className="text-sm text-[#896168]">
-                    6 Sections • 42 Lectures • 12h 30m
-                  </span>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {/* Section 1 */}
-                  <details
-                    className="group bg-white rounded border border-gray-200 overflow-hidden"
-                    open
-                  >
-                    <summary className="flex cursor-pointer items-center justify-between p-4 bg-[#f4f0f1]/50 hover:bg-[#f4f0f1] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className="transition-transform group-open:rotate-180 text-[#896168]">
-                          ▼
-                        </span>
-                        <h3 className="font-bold text-[#181112]">
-                          Section 1: Introduction to UI/UX
-                        </h3>
-                      </div>
-                      <span className="text-xs font-bold text-[#896168]">
-                        45m
-                      </span>
-                    </summary>
-                    <div className="p-0 border-t border-gray-100">
-                      <div className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0">
-                        <div className="flex items-center gap-3">
-                          <PlayCircle className="text-[#896168]" size={18} />
-                          <span className="text-sm text-[#181112]">
-                            What is UI vs UX?
-                          </span>
-                        </div>
-                        <span className="text-xs text-[#cb1030] font-medium">
-                          Preview
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0">
-                        <div className="flex items-center gap-3">
-                          <Lock className="text-[#896168]" size={18} />
-                          <span className="text-sm text-[#181112]">
-                            Tools of the trade
-                          </span>
-                        </div>
-                        <span className="text-xs text-[#896168]">15:20</span>
-                      </div>
-                      <div className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <FileText className="text-[#896168]" size={18} />
-                          <span className="text-sm text-[#181112]">
-                            Course Resources
-                          </span>
-                        </div>
-                        <span className="text-xs text-[#896168]">PDF</span>
-                      </div>
+               {activeTab === "curriculum" && (
+                <div className="mb-12 animate-fadeIn">
+                  <div className="flex justify-between items-end mb-6">
+                    <h2 className="text-2xl font-bold text-[#181112]">
+                      Course Curriculum
+                    </h2>
+                    <span className="text-sm text-[#896168]">
+                      {modules.length} Sections • {totalLessons} Lectures • {totalHours}h {remainingMinutes}m
+                    </span>
+                  </div>
+                  
+                  {modules.length === 0 ? (
+                    <div className="p-8 text-center bg-gray-50 rounded-lg text-gray-500">
+                      No curriculum available yet.
                     </div>
-                  </details>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {modules.map((module, moduleIndex) => {
+                          const moduleLessons = module.lessons || [];
+                          // Check if all lessons in this module are completed
+                          const isModuleCompleted = moduleLessons.length > 0 && 
+                              moduleLessons.every(lesson => completedLessons.includes(lesson._id));
 
-                  {/* Section 2 */}
-                  <details className="group bg-white rounded-md border border-gray-200 overflow-hidden">
-                    <summary className="flex cursor-pointer items-center justify-between p-4 bg-[#f4f0f1]/50 hover:bg-[#f4f0f1] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className="transition-transform group-open:rotate-180 text-[#896168]">
-                          ▼
-                        </span>
-                        <h3 className="font-bold text-[#181112]">
-                          Section 2: Getting Started with Figma
-                        </h3>
-                      </div>
-                      <span className="text-xs font-bold text-[#896168]">
-                        2h 15m
-                      </span>
-                    </summary>
-                    <div className="p-4 text-sm text-[#896168]">
-                      Requires enrollment to view contents.
-                    </div>
-                  </details>
+                          return (
+                            <details
+                              key={module._id}
+                              className="group bg-white rounded border border-gray-200 overflow-hidden"
+                              open={moduleIndex === 0}
+                            >
+                              <summary className="flex cursor-pointer items-center justify-between p-4 bg-[#f4f0f1]/50 hover:bg-[#f4f0f1] transition-colors select-none">
+                                <div className="flex items-center gap-3">
+                                  <span className="transition-transform group-open:rotate-180 text-[#896168]">
+                                    ▼
+                                  </span>
+                                  <h3 className="font-bold text-[#181112]">
+                                    Section {moduleIndex + 1}: {module.title}
+                                  </h3>
+                                </div>
+                                <span className="text-xs font-bold text-[#896168]">
+                                  {moduleLessons.length} lessons
+                                </span>
+                              </summary>
+                              
+                              <div className="p-0 border-t border-gray-100">
+                                {moduleLessons.length > 0 ? (
+                                  <>
+                                    {moduleLessons.map((lesson, lessonIndex) => {
+                                        const isSelected = selectedLesson?._id === lesson._id;
+                                        
+                                        const prevLesson = lessonIndex > 0 ? moduleLessons[lessonIndex - 1] : null;
+                                        const nextLesson = lessonIndex < moduleLessons.length - 1 ? moduleLessons[lessonIndex + 1] : null;
 
-                  {/* Section 3 */}
-                  <details className="group bg-white rounded-md border border-gray-200 overflow-hidden">
-                    <summary className="flex cursor-pointer items-center justify-between p-4 bg-[#f4f0f1]/50 hover:bg-[#f4f0f1] transition-colors">
-                      <div className="flex items-center gap-3">
-                        <span className="transition-transform group-open:rotate-180 text-[#896168]">
-                          ▼
-                        </span>
-                        <h3 className="font-bold text-[#181112]">
-                          Section 3: Design Principles & Typography
-                        </h3>
-                      </div>
-                      <span className="text-xs font-bold text-[#896168]">
-                        3h 10m
-                      </span>
-                    </summary>
-                    <div className="p-4 text-sm text-[#896168]">
-                      Requires enrollment to view contents.
+                                        return (
+                                          <div key={lesson._id}>
+                                              <div 
+                                                  onClick={() => handleLessonSelect(lesson)}
+                                                  className={`flex items-center justify-between px-5 py-3 cursor-pointer transition-colors border-b border-gray-100 last:border-0 ${
+                                                      isSelected ? "bg-red-50" : "hover:bg-gray-50 bg-white"
+                                                  }`}
+                                              >
+                                                <div className="flex items-center gap-3">
+                                                  {lesson.type === 'VIDEO' ? (
+                                                      <PlayCircle className={isSelected ? "text-red-700" : "text-[#896168]"} size={18} />
+                                                  ) : ( 
+                                                      <FileText className={isSelected ? "text-red-700" : "text-[#896168]"} size={18} />
+                                                  )}
+                                                  <span className={`text-sm ${isSelected ? "text-red-800 font-bold" : "text-[#181112]"}`}>
+                                                    {lesson.title}
+                                                  </span>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                     {!isAuthenticated && (
+                                                         <Lock size={14} className="text-gray-400" />
+                                                     )}
+                                                     <span className="text-xs text-[#896168]">{lesson.type}</span>
+                                                </div>
+                                              </div>
+
+                                              {/* Inline Player */}
+                                              {isSelected && (
+                                                  <div className="bg-white border-b border-gray-200 animate-fadeIn">
+                                                      <div className="aspect-video bg-black flex items-center justify-center">
+                                                          {lesson.type === "VIDEO" ? (
+                                                              getMediaUrl(lesson.contentUrl) ? (
+                                                                  <video 
+                                                                      key={getMediaUrl(lesson.contentUrl)}
+                                                                      controls 
+                                                                      className="w-full h-full"
+                                                                      src={getMediaUrl(lesson.contentUrl) || ""}
+                                                                      controlsList="nodownload"
+                                                                  >
+                                                                      Your browser does not support the video tag.
+                                                                  </video>
+                                                              ) : (
+                                                                  <div className="text-white flex flex-col items-center">
+                                                                      <Video size={48} className="mb-4 text-gray-500" />
+                                                                      <p>Video content not available</p>
+                                                                  </div>
+                                                              )
+                                                          ) : (
+                                                              <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-8 text-center">
+                                                                  <FileText size={48} className="text-red-700 mb-4" />
+                                                                  <h3 className="text-lg font-bold text-gray-900 mb-2">{lesson.title}</h3>
+                                                                  <p className="text-gray-500 mb-6 text-sm max-w-md">
+                                                                      This lesson contains a PDF document.
+                                                                  </p>
+                                                                  {getMediaUrl(lesson.contentUrl) ? (
+                                                                      <a 
+                                                                          href={getMediaUrl(lesson.contentUrl) || ""}
+                                                                          target="_blank" 
+                                                                          rel="noopener noreferrer"
+                                                                          className="bg-red-700 text-white px-6 py-2 rounded font-medium hover:bg-red-800 transition-colors flex items-center gap-2"
+                                                                      >
+                                                                          <Download size={18} />
+                                                                          Open PDF Document
+                                                                      </a>
+                                                                  ) : (
+                                                                      <p className="text-red-500">PDF source not found</p>
+                                                                  )}
+                                                              </div>
+                                                          )}
+                                                      </div>
+                                                      
+                                                      {/* Navigation Buttons */}
+                                                      <div className="flex items-center justify-between p-4 bg-white border-t border-gray-200">
+                                                          <button
+                                                              onClick={(e) => { e.stopPropagation(); if(prevLesson) handleLessonSelect(prevLesson); }}
+                                                              disabled={!prevLesson}
+                                                              className={`flex items-center gap-2 px-4 py-2 rounded font-medium text-sm transition-colors border ${
+                                                                  prevLesson 
+                                                                      ? "bg-white text-gray-700 border-gray-300 hover:bg-gray-50" 
+                                                                      : "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                                                              }`}
+                                                          >
+                                                              <ChevronDown size={16} className="rotate-90" />
+                                                              Previous
+                                                          </button>
+                                                          
+                                                          <div className="text-gray-600 text-xs font-medium">
+                                                              Lesson {lessonIndex + 1} of {moduleLessons.length}
+                                                          </div>
+                                                          
+                                                          <button
+                                                              onClick={(e) => { e.stopPropagation(); if(nextLesson) handleLessonSelect(nextLesson); }}
+                                                              disabled={!nextLesson}
+                                                              className={`flex items-center gap-2 px-4 py-2 rounded font-medium text-sm transition-colors ${
+                                                                  nextLesson 
+                                                                      ? "bg-red-700 text-white hover:bg-red-800" 
+                                                                      : "bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed"
+                                                              }`}
+                                                          >
+                                                              Next
+                                                              <ChevronDown size={16} className="-rotate-90" />
+                                                          </button>
+                                                      </div>
+                                                  </div>
+                                              )}
+                                          </div>
+                                        );
+                                    })}
+                                    
+                                    {/* Module Quiz Row */}
+                                     <div 
+                                        className={`flex items-center justify-between px-5 py-4 border-t-2 border-dashed border-gray-200 transition-colors ${
+                                            isModuleCompleted && isAuthenticated
+                                                ? "bg-white cursor-pointer hover:bg-gray-50" 
+                                                : "bg-[#fcf8f9] cursor-not-allowed opacity-80"
+                                        }`}
+                                        onClick={() => {
+                                            if (isModuleCompleted && isAuthenticated) {
+                                                toast.info("Quiz feature coming soon!");
+                                            } else if (!isAuthenticated) {
+                                                toast.error("Please login to take the quiz");
+                                            } else {
+                                                toast.error("Please complete all lessons in this module to unlock the quiz.");
+                                            }
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            {isModuleCompleted && isAuthenticated ? (
+                                                <BookOpen size={18} className="text-[#cb1030]" />
+                                            ) : (
+                                                <Lock size={18} className="#896168" />
+                                            )}
+                                            <div>
+                                                <span className={`text-sm font-medium block ${isModuleCompleted && isAuthenticated ? "text-[#cb1030]" : "text-[#896168]"}`}>
+                                                    Module Quiz
+                                                </span>
+                                                {(!isModuleCompleted || !isAuthenticated) && (
+                                                    <span className="text-xs text-[#896168]">
+                                                        Complete all {moduleLessons.length} lessons to unlock
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-[#896168]">
+                                                10 questions
+                                            </span>
+                                        </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                    <div className="px-5 py-3 text-sm text-gray-400 italic">No lessons in this module</div>
+                                )}
+                              </div>
+                            </details>
+                          );
+                      })}
                     </div>
-                  </details>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* Instructor Section */}
-              <div className="mb-12 scroll-mt-32" id="instructor">
-                <h2 className="text-2xl font-bold mb-6 text-[#181112]">
-                  Meet Your Instructors
-                </h2>
-                <div className="flex flex-col gap-6">
-                  <div className="flex flex-col sm:flex-row gap-6 p-6 rounded-md border border-gray-200 bg-white">
-                    <div className="shrink-0">
-                      <img
-                        alt="Sarah Jenkins"
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBslOWBgDb_uqLzcWxRvXcWs4dIat-UauNLm8_8JsyghzIvl6wGNR9jX6LWfDTPLi2z9Rvlq9DsNNeA2JpzBrcuP7EzqwgjhiN5RSBWTVnDMlZXpyITTBgn6AtXrGJG3toz2umkNzJRnkyIwgszcnvm2msbRv_cjAmu6SiM8giFYX0I0W9Z42HjO7P_hqy7eg1l6VROgnTRy2_pyL1dPGneGpquH9lQAnNCes428CipzUncSKBxBLbnVMUPIwD1XEQJ0SEXYsdwK_Hn"
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#181112]">
-                        Sarah Jenkins
-                      </h3>
-                      <p className="text-[#cb1030] font-medium text-sm mb-3">
-                        Senior Product Designer at Google
-                      </p>
-                      <div className="flex gap-4 text-xs text-[#896168] mb-4">
-                        <div className="flex items-center gap-1">
-                          <Star size={16} fill="currentColor" />
-                          <span>4.9 Instructor Rating</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users size={16} />
-                          <span>45,200 Students</span>
+              {activeTab === "instructor" && (
+                <div className="mb-12 animate-fadeIn">
+                  <h2 className="text-2xl font-bold mb-6 text-[#181112]">
+                    Meet Your Instructor
+                  </h2>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex flex-col sm:flex-row gap-6 p-6 rounded-md border border-gray-200 bg-white">
+                      <div className="shrink-0">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-red-700 flex items-center justify-center text-white text-3xl font-bold">
+                           {course.instructorId.firstName.charAt(0)}{course.instructorId.lastName.charAt(0)}
                         </div>
                       </div>
-                      <p className="text-sm text-[#896168] leading-relaxed">
-                        Sarah is a passionate designer with over 10 years of
-                        experience in the tech industry. She loves breaking down
-                        complex concepts into simple, actionable steps for her
-                        students.
-                      </p>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#181112]">
+                          {course.instructorId.firstName} {course.instructorId.lastName}
+                        </h3>
+                        <p className="text-[#cb1030] font-medium text-sm mb-3">
+                          Instructor
+                        </p>
+                         <div className="flex gap-4 text-xs text-[#896168] mb-4">
+                            <div className="flex items-center gap-1">
+                              <Star size={16} fill="currentColor" />
+                              <span>4.9 Instructor Rating</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users size={16} />
+                              <span>5,200 Students</span>
+                            </div>
+                          </div>
+                        <p className="text-sm text-[#896168] leading-relaxed">
+                          {course.instructorId.email}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+F                </div>
+              )}
 
-              {/* Reviews Section */}
-              <div className="scroll-mt-32" id="reviews">
-                <h2 className="text-2xl font-bold mb-6 text-[#181112]">
-                  Student Reviews
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Review Card 1 */}
-                  <div className="p-5 rounded-md bg-[#f4f0f1]">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="size-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
-                        JD
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-[#181112]">
-                          John Doe
-                        </h4>
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} size={14} fill="currentColor" />
-                          ))}
+               {/* Reviews Section */}
+               {activeTab === "reviews" && (
+                <div className="mb-12 animate-fadeIn">
+                  <h2 className="text-2xl font-bold mb-6 text-[#181112]">
+                    Student Reviews
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Review Card 1 */}
+                    <div className="p-5 rounded-md bg-[#f4f0f1]">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="size-10 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                          JD
                         </div>
-                      </div>
-                      <span className="ml-auto text-xs text-[#896168]">
-                        2 days ago
-                      </span>
-                    </div>
-                    <p className="text-sm text-[#181112]">
-                      The best course I've taken this year. The Figma section
-                      was incredibly detailed.
-                    </p>
-                  </div>
-                  {/* Review Card 2 */}
-                  <div className="p-5 rounded-md bg-[#f4f0f1]">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="size-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
-                        AL
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-[#181112]">
-                          Anna Lee
-                        </h4>
-                        <div className="flex text-yellow-400">
-                          {[...Array(4)].map((_, i) => (
-                            <Star key={i} size={14} fill="currentColor" />
-                          ))}
-                          <Star size={14} />
+                        <div>
+                          <h4 className="text-sm font-bold text-[#181112]">
+                            John Doe
+                          </h4>
+                          <div className="flex text-yellow-400">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} size={14} fill="currentColor" />
+                            ))}
+                          </div>
                         </div>
+                        <span className="ml-auto text-xs text-[#896168]">
+                          2 days ago
+                        </span>
                       </div>
-                      <span className="ml-auto text-xs text-[#896168]">
-                        1 week ago
-                      </span>
+                      <p className="text-sm text-[#181112]">
+                        The best course I've taken this year. The content was incredibly detailed and helpful.
+                      </p>
                     </div>
-                    <p className="text-sm text-[#181112]">
-                      Great content, but I wish there were more examples on
-                      mobile design. Still worth it!
-                    </p>
+                    {/* Review Card 2 */}
+                    <div className="p-5 rounded-md bg-[#f4f0f1]">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="size-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">
+                          AL
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-[#181112]">
+                            Anna Lee
+                          </h4>
+                          <div className="flex text-yellow-400">
+                            {[...Array(4)].map((_, i) => (
+                              <Star key={i} size={14} fill="currentColor" />
+                            ))}
+                            <Star size={14} />
+                          </div>
+                        </div>
+                        <span className="ml-auto text-xs text-[#896168]">
+                          1 week ago
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#181112]">
+                        Great content! I learned a lot about {course.category} concepts that I can apply immediately.
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <button className="mt-6 w-full py-3 rounded-md border border-gray-200 font-bold text-sm text-[#181112] hover:bg-[#f4f0f1] transition-colors">
-                  View all reviews
-                </button>
-              </div>
+              )}
             </div>
 
             {/* Right Sidebar (Sticky) */}
             <div className="w-full lg:w-[360px] shrink-0">
               <div className="sticky top-24 z-20">
                 <div className="bg-white rounded-md shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
-                  {/* Preview Image */}
-                  <div className="relative aspect-video group cursor-pointer bg-black">
-                    <img
-                      alt="Course Preview"
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNZC5MIJyw3jdepglb7hBE8IZtQgtM4_EklnuzAbXnIPn_-Ok3UqWGzGXI55OlpZeAsm8gh-XN2Ih6Q-hCVeniEiQ0VWJOrdhHSN0bo7eQjD-dpOwDRPJOqqdpX-Dk1tGYu5WFwT_SBASSHgsowFwXRuJF5V3HjXNTLmtsLk8DiJTcSv9Fwne30rPle13K_OFPgu4lLb_v1GbDeH-Je2akbac3H2-dcxTtJra-z5WRA1QJhEI8NKn_EB9T_Jxk7W65UOZXvHJ2fi5J"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="size-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center transition-transform group-hover:scale-110">
-                        <Play
-                          size={32}
-                          fill="currentColor"
-                          className="text-white"
-                        />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-4 left-0 w-full text-center">
-                      <span className="text-white font-bold text-sm drop-shadow-md">
-                        Preview this course
-                      </span>
-                    </div>
-                  </div>
+                  
+                  {/* Preview Image / Video Logic */}
+                 <div className="aspect-video bg-black relative group cursor-pointer border-b border-gray-100">
+                     {course.promotionalVideo ? (
+                         isPlayingPromo ? (
+                            // Video Player (YouTube or Native)
+                            getEmbedUrl(course.promotionalVideo) ? (
+                                <iframe 
+                                    className="w-full h-full"
+                                    src={getEmbedUrl(course.promotionalVideo)!}
+                                    title="Promotional Video"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            ) : (
+                                <video 
+                                    className="w-full h-full"
+                                    src={getMediaUrl(course.promotionalVideo) || ""}
+                                    controls
+                                    autoPlay
+                                ></video>
+                            )
+                         ) : (
+                            // Thumbnail Preview with Play Button
+                            <div 
+                                className="absolute inset-0 bg-cover bg-center"
+                                style={{ backgroundImage: `url('${thumbnailUrl || '/placeholder-course.jpg'}')` }}
+                                onClick={() => setIsPlayingPromo(true)}
+                            >
+                                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                    <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg">
+                                        <Play size={24} className="text-red-600 ml-1" fill="currentColor" />
+                                    </div>
+                                </div>
+                                <div className="absolute bottom-4 left-0 w-full text-center">
+                                    <span className="text-white text-xs font-bold uppercase tracking-wider drop-shadow-md">Preview Course</span>
+                                </div>
+                            </div>
+                         )
+                     ) : (
+                         <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                             {/* If no promo video, just show thumbnail static */}
+                              <div 
+                                className="absolute inset-0 bg-cover bg-center opacity-60"
+                                style={{ backgroundImage: `url('${thumbnailUrl || '/placeholder-course.jpg'}')` }}
+                              />
+                             <div className="relative flex flex-col items-center gap-2 text-white">
+                                 <Video size={32} />
+                                 <span className="text-xs font-medium">No preview available</span>
+                             </div>
+                         </div>
+                     )}
+                 </div>
+
                   <div className="p-6">
-                    <div className="flex items-center gap-3 mb-6">
+                    <div className="flex items-center gap-3 mb-6 relative">
                       <span className="text-2xl font-black text-[#181112]">
-                        199.00 DH
+                        {course.price.toFixed(2)} DH 
                       </span>
-                      <span className="text-lg font-base text-[#896168] line-through decoration-[#cb1030] decoration-2">
-                        199.00 DH
-                      </span>
-                      <span className="px-2 py-1 bg-[#cb1030]/10 text-[#cb1030] text-xs font-bold rounded">
-                        50% OFF
+                       <span className="text-lg font-base text-[#896168] line-through decoration-[#cb1030] decoration-2">
+                          {originalPrice.toFixed(2)} DH
+                       </span>
+                      <span className="absolute right-0 top-1 px-2 py-1 bg-red-300/20 text-red-700 text-xs font-bold rounded">
+                        {discountPercentage}% OFF
                       </span>
                     </div>
-                    <button className="w-full py-3 px-4 bg-[#cb1030] hover:bg-[#a00d26] text-white rounded font-bold text-sm shadow-[0_0_15px_rgba(203,16,48,0.15)] transition-all active:scale-[0.98] mb-3">
+                    <button className="w-full py-3 px-4 bg-red-700 hover:bg-red-800 text-white rounded font-bold text-sm shadow-[0_0_15px_rgba(203,16,48,0.15)] transition-all active:scale-[0.98] mb-3">
                       Enroll Now
                     </button>
                     <button className="w-full py-2.5 px-4 bg-transparent border border-gray-200 hover:border-[#cb1030] text-[#181112] hover:text-[#cb1030] rounded font-bold text-sm transition-all mb-6">
@@ -466,24 +673,22 @@ export default function CourseDetailsPage() {
                       <ul className="space-y-3">
                         <li className="flex items-center gap-3 text-sm text-[#896168]">
                           <Monitor size={20} />
-                          <span>12 hours on-demand video</span>
+                          <span>{totalHours} hours on-demand video</span>
                         </li>
                         <li className="flex items-center gap-3 text-sm text-[#896168]">
                           <Download size={20} />
-                          <span>65 downloadable resources</span>
+                          <span>Downloadable resources</span>
                         </li>
                         <li className="flex items-center gap-3 text-sm text-[#896168]">
                           <Infinity size={20} />
                           <span>Full lifetime access</span>
                         </li>
-                        <li className="flex items-center gap-3 text-sm text-[#896168]">
-                          <Smartphone size={20} />
-                          <span>Access on mobile and TV</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-sm text-[#896168]">
-                          <Award size={20} />
-                          <span>Certificate of completion</span>
-                        </li>
+                         {course.hasCertificate && (
+                            <li className="flex items-center gap-3 text-sm text-[#896168]">
+                            <Award size={20} />
+                            <span>Certificate of completion</span>
+                            </li>
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -495,15 +700,6 @@ export default function CourseDetailsPage() {
                       <Gift size={16} /> Gift this course
                     </button>
                   </div>
-                </div>
-                {/* Mini Promo */}
-                <div className="mt-6 p-4 rounded-md bg-[#f4f0f1] border border-dashed border-gray-300 text-center">
-                  <p className="text-sm font-bold text-[#181112] mb-1">
-                    Training 5 or more people?
-                  </p>
-                  <p className="text-xs text-[#896168]">
-                    Get your team access to ED Academy's top 2,000+ courses.
-                  </p>
                 </div>
               </div>
             </div>

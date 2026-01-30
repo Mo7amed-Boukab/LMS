@@ -86,4 +86,78 @@ export class CoursesService {
     const course = await this.findOne(id, instructorId);
     await course.deleteOne();
   }
+
+  // Public methods for student/unauthenticated access
+  async findAllPublic(filters?: {
+    category?: string;
+    level?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ courses: any[]; total: number; page: number; pages: number }> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 12;
+    const skip = (page - 1) * limit;
+
+    const query: any = {
+      isPublicVisible: true,
+      status: 'published',
+    };
+
+    if (filters?.category) {
+      if (filters.category.includes(',')) {
+        query.category = { $in: filters.category.split(',') };
+      } else {
+        query.category = filters.category;
+      }
+    }
+
+    if (filters?.level) {
+      query.level = filters.level;
+    }
+
+    if (filters?.search) {
+      query.$or = [
+        { title: { $regex: filters.search, $options: 'i' } },
+        { description: { $regex: filters.search, $options: 'i' } },
+      ];
+    }
+
+    const [courses, total] = await Promise.all([
+      this.courseModel
+        .find(query)
+        .populate('instructorId', 'firstName lastName email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec(),
+      this.courseModel.countDocuments(query).exec(),
+    ]);
+
+    return {
+      courses,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    };
+  }
+
+  async findOnePublic(id: string): Promise<any> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid course id');
+    }
+
+    const course = await this.courseModel
+      .findOne({ _id: id, isPublicVisible: true, status: 'published' })
+      .populate('instructorId', 'firstName lastName email')
+      .lean()
+      .exec();
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    return course;
+  }
 }

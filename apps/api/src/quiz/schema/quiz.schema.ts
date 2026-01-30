@@ -45,6 +45,18 @@ export class Quiz extends Document {
   @Prop({ required: true, min: 0, max: 100 })
   passingScore: number;
 
+  @Prop({ default: 0 })
+  timeLimit: number;
+
+  @Prop({ default: 3 })
+  maxAttempts: number;
+
+  @Prop({ default: false })
+  shuffleQuestions: boolean;
+
+  @Prop({ default: true })
+  showResultsImmediately: boolean;
+
   @Prop({ enum: QuizStatus, default: QuizStatus.DRAFT })
   status: QuizStatus;
 

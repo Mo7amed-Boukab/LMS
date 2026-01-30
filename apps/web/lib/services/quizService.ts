@@ -1,75 +1,90 @@
+import { apiClient } from "../api-client";
+import { tokenStorage } from "../token-storage";
 import { CreateQuizDto, Quiz } from "../types/quiz";
+
+const getHeaders = () => {
+  const token = tokenStorage.get();
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};
 
 export const quizApi = {
   getAll: async (): Promise<Quiz[]> => {
-    console.log(process.env.NEXT_PUBLIC_API_URL);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes`, {
-      next: { revalidate: 0 },
-      cache: "no-store",
+    return apiClient.get<Quiz[]>("/quizzes", {
+      headers: getHeaders(),
     });
-    if (!res.ok) throw new Error("Erreur lors de la récupération des quizzes");
-    return res.json();
   },
 
   getById: async (id: string): Promise<Quiz> => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}`,
-      {
-        next: { revalidate: 0 },
-        cache: "no-store",
-      }
-    );
-    if (!res.ok) throw new Error("Quiz non trouvé");
-
-    return res.json();
-  },
-
-  update: async (id: string): Promise<Quiz> => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}/questions/${id}`,
-      {
-        next: { revalidate: 0 },
-        cache: "no-store",
-      }
-    );
-    if (!res.ok) throw new Error("Quiz non trouvée");
-    return res.json();
+    return apiClient.get<Quiz>(`/quizzes/${id}`, {
+      headers: getHeaders(),
+    });
   },
 
   create: async (data: CreateQuizDto): Promise<Quiz> => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    return apiClient.post<Quiz>("/quizzes", data, {
+      headers: getHeaders(),
+    });
+  },
+
+  update: async (id: string, data: Partial<CreateQuizDto>): Promise<Quiz> => {
+    return apiClient.request<Quiz>(`/quizzes/${id}`, {
+      method: "PATCH",
+      headers: getHeaders(),
       body: JSON.stringify(data),
     });
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || "Erreur lors de la création");
-    }
-    return res.json();
   },
 
   delete: async (id: string): Promise<void> => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}`,
-      {
-        method: "DELETE",
-      }
-    );
-    if (!res.ok) throw new Error("Erreur lors de la suppression");
+    return apiClient.request<void>(`/quizzes/${id}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
   },
 
   publish: async (id: string): Promise<{ message: string; quizId: string }> => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}/publish`,
+    return apiClient.request<{ message: string; quizId: string }>(
+      `/quizzes/${id}/publish`,
       {
         method: "PATCH",
+        headers: getHeaders(),
       }
     );
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.message || "Erreur lors de la publication");
-    }
-    return res.json();
+  },
+
+  // Question Management
+  addQuestion: async (quizId: string, data: any): Promise<any> => {
+    return apiClient.post<any>(`/quizzes/${quizId}/questions`, data, {
+      headers: getHeaders(),
+    });
+  },
+
+  updateQuestion: async (
+    quizId: string,
+    questionId: string,
+    data: any
+  ): Promise<any> => {
+    return apiClient.request<any>(
+      `/quizzes/${quizId}/questions/${questionId}`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  deleteQuestion: async (
+    quizId: string,
+    questionId: string
+  ): Promise<void> => {
+    return apiClient.request<void>(
+      `/quizzes/${quizId}/questions/${questionId}`,
+      {
+        method: "DELETE",
+        headers: getHeaders(),
+      }
+    );
   },
 };
