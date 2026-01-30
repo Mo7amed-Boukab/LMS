@@ -16,6 +16,7 @@ import {
     List,
     Loader2,
     Plus,
+    Save,
     Settings,
     Trash2,
     UploadCloud,
@@ -24,7 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const categories = [
@@ -114,6 +115,46 @@ export default function CourseEditor() {
     deleteLesson,
   } = useCourseEditor();
 
+  // Local state for form fields to prevent auto-saving
+  const [localCourse, setLocalCourse] = useState<{
+    title: string;
+    description: string;
+    category: string;
+    level: string;
+    price: number;
+    promotionalVideo: string;
+    thumbnail: string;
+    isPublicVisible: boolean;
+    hasCertificate: boolean;
+  }>({
+    title: "",
+    description: "",
+    category: "",
+    level: "",
+    price: 0,
+    promotionalVideo: "",
+    thumbnail: "",
+    isPublicVisible: false,
+    hasCertificate: false,
+  });
+
+  // Sync local state when course data is loaded
+  useEffect(() => {
+    if (course) {
+      setLocalCourse({
+        title: course.title || "",
+        description: course.description || "",
+        category: course.category || "",
+        level: course.level || "",
+        price: course.price || 0,
+        promotionalVideo: course.promotionalVideo || "",
+        thumbnail: course.thumbnail || "",
+        isPublicVisible: course.isPublicVisible || false,
+        hasCertificate: course.hasCertificate || false,
+      });
+    }
+  }, [course]);
+
   const [activeTab, setActiveTab] = useState("basic");
   const router = useRouter();
 
@@ -139,15 +180,19 @@ export default function CourseEditor() {
     );
   }
 
+  const handleSave = async () => {
+    await updateCourse(localCourse);
+  };
+
   const handlePublish = async () => {
-    if (!course.title || modules.length === 0) {
+    if (!localCourse.title || modules.length === 0) {
       toast.error(
         "Please add a title and at least one module before publishing."
       );
       return;
     }
 
-    await updateCourse({ status: "published" });
+    await updateCourse({ ...localCourse, status: "published" });
     setPublishModal(false);
     router.push("/teacher/courses");
   };
@@ -158,8 +203,8 @@ export default function CourseEditor() {
 
     try {
       const result = await teacherCourseService.uploadFile(file, "image");
-      await updateCourse({ thumbnail: result.url });
-      toast.success("Thumbnail uploaded successfully");
+      setLocalCourse(prev => ({ ...prev, thumbnail: result.url }));
+      toast.success("Thumbnail uploaded (Unsaved)");
     } catch (error) {
       console.error(error);
       toast.error("Failed to upload thumbnail");
@@ -264,19 +309,18 @@ export default function CourseEditor() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-500 mr-4">
-              {isSaving ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Check size={14} className="text-green-500" />
-                  Saved
-                </>
-              )}
-            </div>
+            <button
+               onClick={handleSave}
+               disabled={isSaving}
+               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+             >
+               {isSaving ? (
+                 <Loader2 size={16} className="animate-spin" />
+               ) : (
+                 <Save size={16} />
+               )}
+               Save Draft
+             </button>
 
             <button
               onClick={() => setPublishModal(true)}
@@ -364,9 +408,9 @@ export default function CourseEditor() {
                       </label>
                       <input
                         type="text"
-                        value={course.title}
+                        value={localCourse.title}
                         onChange={(e) =>
-                          updateCourse({ title: e.target.value })
+                          setLocalCourse({ ...localCourse, title: e.target.value })
                         }
                         placeholder="e.g. Advanced React Patterns"
                         className="w-full px-4 py-2.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
@@ -379,9 +423,9 @@ export default function CourseEditor() {
                       </label>
                       <textarea
                         rows={6}
-                        value={course.description || ""}
+                        value={localCourse.description || ""}
                         onChange={(e) =>
-                          updateCourse({ description: e.target.value })
+                          setLocalCourse({ ...localCourse, description: e.target.value })
                         }
                         placeholder="Write a compelling description..."
                         className="w-full px-4 py-2.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all resize-y placeholder:text-gray-400"
@@ -395,8 +439,8 @@ export default function CourseEditor() {
                         </label>
                         <CustomSelect
                           options={categories}
-                          value={course.category}
-                          onChange={(val) => updateCourse({ category: val })}
+                          value={localCourse.category}
+                          onChange={(val) => setLocalCourse({ ...localCourse, category: val })}
                           placeholder="Select a category"
                         />
                       </div>
@@ -406,8 +450,8 @@ export default function CourseEditor() {
                         </label>
                         <CustomSelect
                           options={levels}
-                          value={course.level}
-                          onChange={(val) => updateCourse({ level: val })}
+                          value={localCourse.level}
+                          onChange={(val) => setLocalCourse({ ...localCourse, level: val })}
                           placeholder="Select difficulty level"
                         />
                       </div>
@@ -718,9 +762,9 @@ export default function CourseEditor() {
                           onChange={handleImageUpload}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
-                        {course.thumbnail ? (
+                        {localCourse.thumbnail ? (
                           <img
-                            src={getMediaUrl(course.thumbnail)}
+                            src={getMediaUrl(localCourse.thumbnail)}
                             alt="Thumbnail"
                             className="max-h-64 object-cover rounded shadow-sm"
                           />
@@ -751,9 +795,9 @@ export default function CourseEditor() {
                         <div className="flex flex-col sm:flex-row gap-4">
                           <input
                             type="text"
-                            value={course.promotionalVideo || ""}
+                            value={localCourse.promotionalVideo || ""}
                             onChange={(e) =>
-                              updateCourse({ promotionalVideo: e.target.value })
+                              setLocalCourse({ ...localCourse, promotionalVideo: e.target.value })
                             }
                             placeholder="Paste video URL (e.g. YouTube, Vimeo)"
                             className="flex-1 px-4 py-2.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none"
@@ -788,9 +832,9 @@ export default function CourseEditor() {
                         </span>
                         <input
                           type="number"
-                          value={course.price || 0}
+                          value={localCourse.price || 0}
                           onChange={(e) =>
-                            updateCourse({ price: Number(e.target.value) })
+                            setLocalCourse({ ...localCourse, price: Number(e.target.value) })
                           }
                           placeholder="0.00"
                           className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all"
@@ -818,11 +862,9 @@ export default function CourseEditor() {
                           <input
                             type="checkbox"
                             className="sr-only peer"
-                            checked={course.isPublicVisible}
+                            checked={localCourse.isPublicVisible}
                             onChange={(e) =>
-                              updateCourse({
-                                isPublicVisible: e.target.checked,
-                              })
+                              setLocalCourse({ ...localCourse, isPublicVisible: e.target.checked })
                             }
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-700"></div>
@@ -843,9 +885,9 @@ export default function CourseEditor() {
                           <input
                             type="checkbox"
                             className="sr-only peer"
-                            checked={course.hasCertificate}
+                            checked={localCourse.hasCertificate}
                             onChange={(e) =>
-                              updateCourse({ hasCertificate: e.target.checked })
+                              setLocalCourse({ ...localCourse, hasCertificate: e.target.checked })
                             }
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-700"></div>

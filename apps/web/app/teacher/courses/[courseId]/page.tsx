@@ -107,8 +107,6 @@ export default function CourseDetailsPage({
     if (!url) return null;
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
     
-    // Fix: Handle legacy URLs that might have been saved with the frontend port (3000)
-    // This replaces them with the correct backend port (4000)
     if (url.includes("localhost:3000/uploads")) {
         return url.replace("localhost:3000", "localhost:4000");
     }
@@ -206,18 +204,6 @@ export default function CourseDetailsPage({
                 <div className="prose prose-sm prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-wrap">
                     {course.description || "No description provided."}
                 </div>
-                
-                 <div className="mt-6 bg-gray-50 p-5 rounded border border-gray-100">
-                    <h4 className="font-bold text-gray-900 mb-3 text-sm">What you'll learn</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                         {["Master the core concepts", "Build real-world projects", "Understand industry best practices", "Get job-ready skills"].map((item, i) => (
-                             <div key={i} className="flex gap-2 items-center">
-                                <CheckCircle className="text-red-700 shrink-0" size={16} />
-                                <span className="text-sm text-gray-700">{item}</span>
-                             </div>
-                         ))}
-                    </div>
-                 </div>
             </div>
             
              {/* Curriculum List */}
