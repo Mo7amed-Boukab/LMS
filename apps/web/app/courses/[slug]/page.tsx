@@ -434,6 +434,7 @@ export default function CourseDetailsPage() {
                                     })}
                                     
                                     {/* Module Quiz Row */}
+                                     {/* Module Quiz Row */}
                                      <div 
                                         className={`flex items-center justify-between px-5 py-4 border-t-2 border-dashed border-gray-200 transition-colors ${
                                             isModuleCompleted && isAuthenticated
@@ -442,7 +443,12 @@ export default function CourseDetailsPage() {
                                         }`}
                                         onClick={() => {
                                             if (isModuleCompleted && isAuthenticated) {
-                                                toast.info("Quiz feature coming soon!");
+                                                if (module.quiz?._id) {
+                                                    // Redirect to student quiz page
+                                                    router.push(`/student/quiz/${module.quiz._id}`);
+                                                } else {
+                                                    toast.info("Quiz feature coming soon!");
+                                                }
                                             } else if (!isAuthenticated) {
                                                 toast.error("Please login to take the quiz");
                                             } else {
@@ -458,7 +464,7 @@ export default function CourseDetailsPage() {
                                             )}
                                             <div>
                                                 <span className={`text-sm font-medium block ${isModuleCompleted && isAuthenticated ? "text-[#cb1030]" : "text-[#896168]"}`}>
-                                                    Module Quiz
+                                                    {module.quiz?.title || "Module Quiz"}
                                                 </span>
                                                 {(!isModuleCompleted || !isAuthenticated) && (
                                                     <span className="text-xs text-[#896168]">
@@ -518,7 +524,7 @@ export default function CourseDetailsPage() {
                           </div>
                         <p className="text-sm text-[#896168] leading-relaxed">
                           {course.instructorId.email}
-                        </p>
+                          </p>
                       </div>
                     </div>
                   </div>

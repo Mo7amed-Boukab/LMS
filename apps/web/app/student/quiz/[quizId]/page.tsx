@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import QuizClient from "./QuizClient";
 
 interface QuizData {
@@ -81,5 +82,13 @@ export default function QuizPage({
     );
   }
 
-  return <QuizClient quiz={quiz} quizId={resolvedParams.quizId} />;
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow bg-gray-50 flex flex-col">
+        <QuizClient quiz={quiz} quizId={resolvedParams.quizId} />
+      </main>
+      <Footer />
+    </div>
+  );
 }

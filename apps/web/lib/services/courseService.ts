@@ -86,4 +86,8 @@ export interface CourseModule {
   order: number;
   isActive: boolean;
   lessons?: CourseLesson[];
+  quiz?: {
+    _id: string;
+    title: string;
+  };
 }

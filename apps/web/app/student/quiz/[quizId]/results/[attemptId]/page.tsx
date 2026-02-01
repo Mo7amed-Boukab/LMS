@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import ResultClient from "./ResultClient";
 
 interface ResultsData {
@@ -74,5 +76,13 @@ export default function ResultsPage({
     );
   }
 
-  return <ResultClient results={results} quizId={resolvedParams.quizId} />;
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow bg-gray-50 flex flex-col">
+        <ResultClient results={results} quizId={resolvedParams.quizId} />
+      </main>
+      <Footer />
+    </div>
+  );
 }

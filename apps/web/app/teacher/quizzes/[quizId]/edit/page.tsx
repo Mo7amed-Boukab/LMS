@@ -5,18 +5,18 @@ import { quizApi } from "@/lib/services/quizService";
 import { teacherCourseService } from "@/lib/services/teacher-course.service";
 import { CreateQuizDto, QuestionType } from "@/lib/types/quiz";
 import {
-    ArrowLeft,
-    Check,
-    ChevronDown,
-    Clock,
-    Layout,
-    List,
-    Loader2,
-    Plus,
-    Save,
-    Settings,
-    Trash2,
-    X,
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  Clock,
+  Layout,
+  List,
+  Loader2,
+  Plus,
+  Save,
+  Settings,
+  Trash2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -127,7 +127,6 @@ export default function EditQuizPage({
   // Settings State
   const [timeLimit, setTimeLimit] = useState(30);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
-  const [maxAttempts, setMaxAttempts] = useState(3);
   const [showResults, setShowResults] = useState(true);
 
   // Metadata State
@@ -171,7 +170,6 @@ export default function EditQuizPage({
                 
                 setPassingScore(quiz.passingScore);
                 setTimeLimit(quiz.timeLimit || 0);
-                setMaxAttempts(quiz.maxAttempts || 1);
                 setShuffleQuestions(quiz.shuffleQuestions || false);
                 setShowResults(quiz.showResultsImmediately ?? true);
                 
@@ -220,7 +218,6 @@ export default function EditQuizPage({
         moduleId,
         passingScore,
         timeLimit,
-        maxAttempts,
         shuffleQuestions,
         showResultsImmediately: showResults,
       };
@@ -633,20 +630,6 @@ export default function EditQuizPage({
                             <p className="text-xs text-gray-400">Set to 0 for no time limit.</p>
                          </div>
 
-                         {/* Max Attempts */}
-                         <div className="space-y-4">
-                            <label className="text-sm font-semibold text-gray-700 block mb-2">Max Attempts</label>
-                             <div className="flex items-center gap-3">
-                                <input 
-                                    type="number" 
-                                    value={maxAttempts}
-                                    onChange={(e) => setMaxAttempts(Number(e.target.value))}
-                                    className="w-24 px-3 py-2 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none"
-                                />
-                                <span className="text-sm text-gray-500">attempts</span>
-                            </div>
-                         </div>
-                         
                          {/* Shuffle Questions */}
                          <div className="space-y-4">
                              <div className="flex items-start gap-3">

@@ -1,17 +1,17 @@
 import { Type } from 'class-transformer';
 import {
-    ArrayMinSize,
-    IsArray,
-    // ArrayMinSize,
-    // IsArray,
-    IsBoolean,
-    IsEnum,
-    IsMongoId,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsString,
-    ValidateNested,
+  ArrayMinSize,
+  IsArray,
+  // ArrayMinSize,
+  // IsArray,
+  IsBoolean,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
 } from 'class-validator';
 import { QuestionType } from 'src/common/enums/question-type.enum';
 
@@ -52,10 +52,6 @@ export class CreateQuizDto {
   @IsOptional()
   @IsNumber()
   timeLimit?: number;
-
-  @IsOptional()
-  @IsNumber()
-  maxAttempts?: number;
 
   @IsOptional()
   @IsBoolean()

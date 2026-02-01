@@ -1,8 +1,8 @@
 import {
-    BadRequestException,
-    ForbiddenException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -10,8 +10,8 @@ import { Model, Types } from 'mongoose';
 import { CreateCourseModuleDto } from './dto/create-course-module.dto';
 import { UpdateCourseModuleDto } from './dto/update-course-module.dto';
 import {
-    CourseModuleDocument,
-    Module as CourseModuleEntity,
+  CourseModuleDocument,
+  Module as CourseModuleEntity,
 } from './schemas/course-module.schema';
 
 import { Course, CourseDocument } from 'src/courses/schemas/course.schema';
@@ -69,16 +69,68 @@ export class CourseModulesService {
   /* -------------------------------------------------------------------------- */
   /*                         GET MODULES BY COURSE                                */
   /* -------------------------------------------------------------------------- */
-  async getModulesByCourse(courseId: string): Promise<CourseModuleEntity[]> {
+  async getModulesByCourse(courseId: string): Promise<any[]> {
     if (!Types.ObjectId.isValid(courseId)) {
       throw new BadRequestException('Invalid courseId');
     }
 
     return this.courseModuleModel
-      .find({ courseId: new Types.ObjectId(courseId), isActive: true })
-      .populate('lessons')
-      .sort({ order: 1 })
-      .lean({ virtuals: true })
+      .aggregate([
+        {
+          $match: {
+            courseId: new Types.ObjectId(courseId),
+            isActive: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'courselessons',
+            localField: '_id',
+            foreignField: 'moduleId',
+            as: 'lessons',
+          },
+        },
+        {
+          $lookup: {
+            from: 'quizzes',
+            let: { moduleId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $or: [
+                      // Match if moduleId is already an ObjectId
+                      { $eq: ['$moduleId', '$$moduleId'] },
+                      // Match if moduleId is a string (convert to ObjectId)
+                      { $eq: [{ $toObjectId: '$moduleId' }, '$$moduleId'] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: 'quizArray',
+          },
+        },
+        {
+          $addFields: {
+            quiz: {
+              $cond: {
+                if: { $gt: [{ $size: '$quizArray' }, 0] },
+                then: { $arrayElemAt: ['$quizArray', 0] },
+                else: null,
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            quizArray: 0,
+          },
+        },
+        {
+          $sort: { order: 1 },
+        },
+      ])
       .exec();
   }
 

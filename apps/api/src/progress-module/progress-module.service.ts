@@ -16,7 +16,7 @@ export class ProgressModuleService {
   ) {}
 
   /**
-   * 1️⃣ Initialiser la progression (à l'inscription)
+   * 1️ Initialiser la progression (à l'inscription)
    */
   async initializeCourseProgress(studentId: string, courseId: string) {
     // Vérifier si existe déjà
@@ -38,7 +38,7 @@ export class ProgressModuleService {
     const moduleProgress = modules.map((module, index) => ({
       moduleId: module._id,
       isCompleted: false,
-      isUnlocked: index === 0, // ✅ Seul le 1er module déverrouillé
+      isUnlocked: index === 0, // Seul le 1er module déverrouillé
     }));
 
     return await this.progressModel.create({
@@ -49,7 +49,7 @@ export class ProgressModuleService {
   }
 
   /**
-   * 2️⃣ Vérifier si un module est accessible
+   * 2️ Vérifier si un module est accessible
    */
   async canAccessModule(studentId: string, moduleId: string): Promise<boolean> {
     const module = await this.moduleModel.findById(moduleId).select('courseId');
@@ -70,7 +70,7 @@ export class ProgressModuleService {
   }
 
   /**
-   * 3️⃣ Marquer un module comme terminé (appelé après quiz réussi)
+   * 3 Marquer un module comme terminé (appelé après quiz réussi)
    */
   async completeModule(studentId: string, moduleId: string) {
     const module = await this.moduleModel.findById(moduleId).select('courseId');
@@ -109,7 +109,7 @@ export class ProgressModuleService {
   }
 
   /**
-   * 4️⃣ Obtenir la progression d'un cours
+   * 4 Obtenir la progression d'un cours
    */
   async getCourseProgress(studentId: string, courseId: string) {
     const progress = await this.progressModel
@@ -143,7 +143,7 @@ export class ProgressModuleService {
       };
     });
 
-    // ✅ Calculer la progression à la volée
+    // Calculer la progression à la volée
     const completedCount = progress.modules.filter((m) => m.isCompleted).length;
     const overallProgress = Math.round(
       (completedCount / progress.modules.length) * 100,
@@ -151,7 +151,7 @@ export class ProgressModuleService {
 
     return {
       courseId: progress.courseId,
-      overallProgress, // ✅ Calculé dynamiquement
+      overallProgress, // Calculé dynamiquement
       modules: enrichedModules,
       completedModules: completedCount,
       totalModules: progress.modules.length,
@@ -159,7 +159,7 @@ export class ProgressModuleService {
   }
 
   /**
-   * 5️⃣ Prochain module à faire
+   * 5️ Prochain module à faire
    */
   async getNextModule(studentId: string, courseId: string) {
     const progress = await this.progressModel.findOne({

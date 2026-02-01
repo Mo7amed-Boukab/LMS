@@ -1,14 +1,15 @@
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Quiz } from 'src/quiz/schema/quiz.schema';
-import { QuizAttempt } from './schema/quiz-attempt.schema';
-import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { ProgressModuleService } from 'src/progress-module/progress-module.service';
+import { Quiz } from 'src/quiz/schema/quiz.schema';
+import { SubmitQuizDto } from './dto/submit-quiz.dto';
+import { QuizAttempt } from './schema/quiz-attempt.schema';
 
 @Injectable()
 export class QuizAttemptService {
@@ -25,17 +26,17 @@ export class QuizAttemptService {
       throw new NotFoundException('Quiz not found');
     }
 
-    // Vérifier l'accès au module - commented out for now
-    // const hasAccess = await this.progressService.canAccessModule(
-    //   studentId,
-    //   quiz.moduleId.toString(),
-    // );
+    // Vérifier l'accès au module
+    const hasAccess = await this.progressService.canAccessModule(
+      studentId,
+      quiz.moduleId.toString(),
+    );
 
-    // if (!hasAccess) {
-    //   throw new ForbiddenException(
-    //     'You must complete the previous module to access this quiz',
-    //   );
-    // }
+    if (!hasAccess) {
+      throw new ForbiddenException(
+        'You must complete the previous module to access this quiz',
+      );
+    }
 
     //Retourner les questions SANS les réponses correctes
     const questionsForStudent = quiz.questions.map((q) => ({
@@ -52,6 +53,7 @@ export class QuizAttemptService {
       quizId: quiz._id,
       title: quiz.title,
       passingScore: quiz.passingScore,
+      timeLimit: quiz.timeLimit,
       totalQuestions: quiz.questions.length,
       questions: questionsForStudent,
     };
@@ -119,13 +121,13 @@ export class QuizAttemptService {
       passed,
     });
 
-    // Si réussi : Débloquer le module suivant - commented out for now
-    // if (passed) {
-    //   await this.progressService.completeModule(
-    //     studentId,
-    //     quiz.moduleId.toString(),
-    //   );
-    // }
+    // Si réussi : Débloquer le module suivant
+    if (passed) {
+      await this.progressService.completeModule(
+        studentId,
+        quiz.moduleId.toString(),
+      );
+    }
 
     return {
       attemptId: attempt._id,
@@ -181,11 +183,13 @@ export class QuizAttemptService {
 
     return {
       attemptId: attempt._id,
+      quizId: quiz._id,
       quizTitle: quiz.title,
       score: attempt.score,
       passed: attempt.passed,
       correctAnswers: attempt.answers.filter((a) => a.isCorrect).length,
       totalQuestions: quiz.questions.length,
+      passingScore: quiz.passingScore,
       takenAt: attempt.createdAt,
       details,
     };

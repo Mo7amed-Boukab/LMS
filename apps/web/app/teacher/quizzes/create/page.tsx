@@ -121,7 +121,6 @@ export default function CreateQuizPage() {
   // Settings State (Frontend Only for now)
   const [timeLimit, setTimeLimit] = useState(30);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
-  const [maxAttempts, setMaxAttempts] = useState(3);
   const [showResults, setShowResults] = useState(true);
 
   // Metadata State
@@ -182,7 +181,6 @@ export default function CreateQuizPage() {
         moduleId,
         passingScore,
         timeLimit,
-        maxAttempts,
         shuffleQuestions,
         showResultsImmediately: showResults,
       };
@@ -200,14 +198,6 @@ export default function CreateQuizPage() {
       }
 
       // 2. Sync Questions
-      // Note: Full sync logic would be complex (diffing).
-      // Here we assume we just iterate and save/update each.
-      // Ideally, we should soft-delete removed questions, but the API logic I added supports delete.
-      // For now, let's just Upsert questions.
-      
-      // NOTE: Current backend API for 'addQuestion' and 'updateQuestion' handles one by one.
-      // Ideally we should have a bulk update endpoints, but we iterate for now.
-      
       const updatedQuestions = [...questions];
 
       for (let i = 0; i < updatedQuestions.length; i++) {
@@ -581,7 +571,7 @@ export default function CreateQuizPage() {
                             Quiz Settings
                         </h3>
                         <p className="text-sm text-gray-500">
-                            Configure advanced options for this quiz (Time limits, attempts, etc.)
+                            Configure advanced options for this quiz (Time limits, etc.)
                         </p>
                     </div>
                     
@@ -602,20 +592,6 @@ export default function CreateQuizPage() {
                                 <span className="text-sm text-gray-500">minutes</span>
                             </div>
                             <p className="text-xs text-gray-400">Set to 0 for no time limit.</p>
-                         </div>
-
-                         {/* Max Attempts */}
-                         <div className="space-y-4">
-                            <label className="text-sm font-semibold text-gray-700 block mb-2">Max Attempts</label>
-                             <div className="flex items-center gap-3">
-                                <input 
-                                    type="number" 
-                                    value={maxAttempts}
-                                    onChange={(e) => setMaxAttempts(Number(e.target.value))}
-                                    className="w-24 px-3 py-2 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none"
-                                />
-                                <span className="text-sm text-gray-500">attempts</span>
-                            </div>
                          </div>
                          
                          {/* Shuffle Questions */}
