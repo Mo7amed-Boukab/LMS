@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from './schema/user.schema';
 import * as bcrypt from 'bcryptjs';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Model } from 'mongoose';
 import { Role } from 'src/common/enums/role.enum';
+import { CreateUserDto } from './dto/create-user.dto';
+import { User, UserDocument } from './schema/user.schema';
 
 @Injectable()
 export class UsersService {
@@ -39,5 +39,10 @@ export class UsersService {
     }
 
     return user;
+  }
+  async updateRefreshToken(userId: string, refreshTokenHash: string | null): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, {
+      refreshTokenHash,
+    });
   }
 }

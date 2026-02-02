@@ -1,8 +1,9 @@
+import { AuthProvider } from "@/context/auth-context";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/context/auth-context";
 import { Toaster } from "sonner";
+import "./globals.css";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -33,7 +34,40 @@ export default function RootLayout({
       >
         <AuthProvider>
           {children}
-          <Toaster position="top-right" richColors />
+          <Toaster 
+            position="top-right" 
+            richColors={false}
+            icons={{
+                success: (
+                  <div className="rounded-full p-2 flex items-center justify-center">
+                    <CheckCircle className="text-red-700 w-4.5 h-4.5" />
+                  </div>
+                ),
+                error: (
+                  <div className="rounded-full p-2 flex items-center justify-center">
+                    <AlertCircle className="text-red-700 w-4.5 h-4.5" />
+                  </div>
+                ),
+              }}
+            toastOptions={{
+              style: {
+                background: 'white',
+                color: '#1a1a1a',
+                borderRadius: '8px',
+                border: 'none',
+                borderLeft: '5px solid #cb1030',
+                padding: '16px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                fontSize: '14px',
+                fontFamily: 'var(--font-manrope)',
+              },
+              classNames: {
+                toast: 'group pointer-events-auto flex items-center',
+                title: 'text-[#1a1a1a] font-medium ml-3',
+                icon: 'flex items-center justify-center',
+              }
+            }}
+          />
         </AuthProvider>
       </body>
     </html>

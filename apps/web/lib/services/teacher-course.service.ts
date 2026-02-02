@@ -1,5 +1,4 @@
 import { apiClient } from "../api-client";
-import { tokenStorage } from "../token-storage";
 
 export interface Course {
   _id: string;
@@ -39,59 +38,40 @@ export interface CourseLesson {
   metadata?: Record<string, any>;
 }
 
-const getHeaders = () => {
-  const token = tokenStorage.get();
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
-
 export const teacherCourseService = {
   // --- Courses ---
   createCourse: async (data: Partial<Course>): Promise<Course> => {
-    return apiClient.post<Course>("/courses", data, {
-      headers: getHeaders(),
-    });
+    return apiClient.post<Course>("/courses", data);
   },
 
   getAllCourses: async (): Promise<Course[]> => {
-    return apiClient.get<Course[]>("/courses", {
-      headers: getHeaders(),
-    });
+    return apiClient.get<Course[]>("/courses");
   },
 
   getCourse: async (id: string): Promise<Course> => {
-    return apiClient.get<Course>(`/courses/${id}`, {
-      headers: getHeaders(),
-    });
+    return apiClient.get<Course>(`/courses/${id}`);
   },
 
   updateCourse: async (id: string, data: Partial<Course>): Promise<Course> => {
     return apiClient.request<Course>(`/courses/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-      headers: getHeaders(),
     });
   },
 
   deleteCourse: async (id: string): Promise<void> => {
     return apiClient.request<void>(`/courses/${id}`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
   },
 
   // --- Modules ---
   createModule: async (data: Partial<CourseModule>): Promise<CourseModule> => {
-    return apiClient.post<CourseModule>("/course-modules", data, {
-      headers: getHeaders(),
-    });
+    return apiClient.post<CourseModule>("/course-modules", data);
   },
 
   getModulesByCourse: async (courseId: string): Promise<CourseModule[]> => {
-    return apiClient.get<CourseModule[]>(`/course-modules/course/${courseId}`, {
-      headers: getHeaders(),
-    });
+    return apiClient.get<CourseModule[]>(`/course-modules/course/${courseId}`);
   },
 
   updateModule: async (
@@ -101,14 +81,12 @@ export const teacherCourseService = {
     return apiClient.request<CourseModule>(`/course-modules/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-      headers: getHeaders(),
     });
   },
 
   deleteModule: async (id: string): Promise<void> => {
     return apiClient.request<void>(`/course-modules/${id}`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
   },
 
@@ -121,22 +99,17 @@ export const teacherCourseService = {
       {
         method: "PATCH",
         body: JSON.stringify(moduleIds),
-        headers: getHeaders(),
       }
     );
   },
 
   // --- Lessons ---
   createLesson: async (data: Partial<CourseLesson>): Promise<CourseLesson> => {
-    return apiClient.post<CourseLesson>("/course-lessons", data, {
-      headers: getHeaders(),
-    });
+    return apiClient.post<CourseLesson>("/course-lessons", data);
   },
 
   getLessonsByModule: async (moduleId: string): Promise<CourseLesson[]> => {
-    return apiClient.get<CourseLesson[]>(`/course-lessons/module/${moduleId}`, {
-      headers: getHeaders(),
-    });
+    return apiClient.get<CourseLesson[]>(`/course-lessons/module/${moduleId}`);
   },
 
   updateLesson: async (
@@ -146,14 +119,12 @@ export const teacherCourseService = {
     return apiClient.request<CourseLesson>(`/course-lessons/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-      headers: getHeaders(),
     });
   },
 
   deleteLesson: async (id: string): Promise<void> => {
     return apiClient.request<void>(`/course-lessons/${id}`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
   },
 
@@ -166,7 +137,6 @@ export const teacherCourseService = {
       {
         method: "PATCH",
         body: JSON.stringify(lessonIds),
-        headers: getHeaders(),
       }
     );
   },
@@ -179,20 +149,12 @@ export const teacherCourseService = {
     const formData = new FormData();
     formData.append("file", file);
 
-    const token = tokenStorage.get();
-
-    if (!token) {
-      throw new Error("Authentication token not found. Please log in again.");
-    }
-
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/uploads/${type}`,
       {
         method: "POST",
         body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: "include",
       }
     );
 

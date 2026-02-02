@@ -36,7 +36,7 @@ export default function ResultClient({ results, quizId }: ResultsClientProps) {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
   
-  const circleColor = isPassed ? "text-green-600" : "text-red-700";
+  const circleColor = isPassed ? "text-red-700" : "text-red-900";
 
   const handleRetry = () => {
     // Clear saved progress
@@ -67,7 +67,7 @@ export default function ResultClient({ results, quizId }: ResultsClientProps) {
         {/* Main Result Card */}
         <div className="bg-white rounded border border-gray-100 shadow-sm overflow-hidden relative">
              {/* Top Status Bar */}
-             <div className={`absolute top-0 left-0 w-full h-1.5 ${isPassed ? 'bg-green-600' : 'bg-red-700'}`} />
+             <div className={`absolute top-0 left-0 w-full h-1.5 ${isPassed ? 'bg-red-700' : 'bg-red-900'}`} />
              
              <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 
@@ -105,8 +105,8 @@ export default function ResultClient({ results, quizId }: ResultsClientProps) {
 
                    <div className={`px-4 py-1.5 rounded-full font-bold text-xs flex items-center gap-2 border ${
                        isPassed 
-                         ? 'bg-green-50 text-green-700 border-green-200' 
-                         : 'bg-red-50 text-red-700 border-red-100'
+                         ? 'bg-red-50 text-red-700 border-red-200' 
+                         : 'bg-red-50 text-red-800 border-red-100'
                    }`}>
                       {isPassed ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
                       {isPassed ? "PASSED" : "NOT PASSED"}
@@ -149,8 +149,8 @@ export default function ResultClient({ results, quizId }: ResultsClientProps) {
                          onClick={isPassed ? handleContinue : handleRetry}
                          className={`w-full px-8 py-3 rounded font-medium flex items-center justify-center gap-2 transition-all text-sm ${
                             isPassed 
-                              ? 'bg-green-600 hover:bg-green-700 text-white' 
-                              : 'bg-red-700 hover:bg-red-800 text-white hover:translate-y-px'
+                              ? 'bg-red-700 hover:bg-red-800 text-white' 
+                              : 'bg-red-800 hover:bg-red-900 text-white hover:translate-y-px'
                          }`}
                       >
                          {isPassed ? (

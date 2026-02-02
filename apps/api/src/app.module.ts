@@ -13,8 +13,17 @@ import { QuizAttempModule } from './quiz-attempt/quiz-attempt.module';
 import { QuizModule } from './quiz/quiz.module';
 import { UploadsModule } from './uploads/uploads.module';
 
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+
 @Module({
   imports: [
+    // Rate Limiting: 10 requests per 60 seconds by default
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
+
     //ConfigModule
     ConfigModule.forRoot({
       isGlobal: true,
@@ -27,6 +36,7 @@ import { UploadsModule } from './uploads/uploads.module';
         uri: configService.get<string>('MONGO_URI'),
       }),
     }),
+
     DatabaseModule,
     AuthModule,
     QuizModule,
@@ -38,6 +48,12 @@ import { UploadsModule } from './uploads/uploads.module';
     QuizAttempModule,
     ProgressModuleModule,
     EnrollmentModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

@@ -1,14 +1,32 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export const apiClient = {
-  async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  async request<T>(endpoint: string, options?: RequestInit, isRetry = false): Promise<T> {
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
+      credentials: "include", // Ensure cookies are sent
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
       },
     });
+
+    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+      try {
+        // Attempt to refresh tokens
+        const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+
+        if (refreshRes.ok) {
+          // Retry original request
+          return this.request<T>(endpoint, options, true);
+        }
+      } catch (error) {
+        console.error("Auto-refresh failed", error);
+      }
+    }
 
     if (!response.ok) {
       let errorMessage = "Request failed";
@@ -22,11 +40,6 @@ export const apiClient = {
           errorMessage = `Request failed with status ${response.status}`;
         }
       }
-
-      if (response.status === 401) {
-        console.warn("Unauthorized request to:", endpoint);
-      }
-
       throw new Error(errorMessage || "Request failed");
     }
 

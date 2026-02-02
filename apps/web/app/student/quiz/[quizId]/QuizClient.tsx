@@ -100,14 +100,6 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
     const toastId = toast.loading("Submitting quiz...");
 
     try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        toast.error("Session expired. Please login again.", { id: toastId });
-        setShowSubmitModal(false);
-        setIsSubmitting(false);
-        return;
-      }
-
       const formattedAnswers = Object.entries(answers).map(
         ([questionId, selectedOptionId]) => ({ questionId, selectedOptionId })
       );
@@ -118,8 +110,8 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
           body: JSON.stringify({ answers: formattedAnswers }),
         }
       );
@@ -127,6 +119,11 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
       const result = await res.json();
 
       if (!res.ok) {
+        if (res.status === 401) {
+            toast.error("Session expired. Please login again.", { id: toastId });
+            router.push('/login');
+            return;
+        }
         toast.error(result.message || "Error submitting quiz", { id: toastId });
         setIsSubmitting(false);
         setShowSubmitModal(false);

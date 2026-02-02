@@ -1,37 +1,22 @@
 import { apiClient } from "../api-client";
-import { tokenStorage } from "../token-storage";
 import { CreateQuizDto, Quiz } from "../types/quiz";
-
-const getHeaders = () => {
-  const token = tokenStorage.get();
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-};
 
 export const quizApi = {
   getAll: async (): Promise<Quiz[]> => {
-    return apiClient.get<Quiz[]>("/quizzes", {
-      headers: getHeaders(),
-    });
+    return apiClient.get<Quiz[]>("/quizzes");
   },
 
   getById: async (id: string): Promise<Quiz> => {
-    return apiClient.get<Quiz>(`/quizzes/${id}`, {
-      headers: getHeaders(),
-    });
+    return apiClient.get<Quiz>(`/quizzes/${id}`);
   },
 
   create: async (data: CreateQuizDto): Promise<Quiz> => {
-    return apiClient.post<Quiz>("/quizzes", data, {
-      headers: getHeaders(),
-    });
+    return apiClient.post<Quiz>("/quizzes", data);
   },
 
   update: async (id: string, data: Partial<CreateQuizDto>): Promise<Quiz> => {
     return apiClient.request<Quiz>(`/quizzes/${id}`, {
       method: "PATCH",
-      headers: getHeaders(),
       body: JSON.stringify(data),
     });
   },
@@ -39,7 +24,6 @@ export const quizApi = {
   delete: async (id: string): Promise<void> => {
     return apiClient.request<void>(`/quizzes/${id}`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
   },
 
@@ -48,16 +32,13 @@ export const quizApi = {
       `/quizzes/${id}/publish`,
       {
         method: "PATCH",
-        headers: getHeaders(),
       }
     );
   },
 
   // Question Management
   addQuestion: async (quizId: string, data: any): Promise<any> => {
-    return apiClient.post<any>(`/quizzes/${quizId}/questions`, data, {
-      headers: getHeaders(),
-    });
+    return apiClient.post<any>(`/quizzes/${quizId}/questions`, data);
   },
 
   updateQuestion: async (
@@ -69,7 +50,6 @@ export const quizApi = {
       `/quizzes/${quizId}/questions/${questionId}`,
       {
         method: "PATCH",
-        headers: getHeaders(),
         body: JSON.stringify(data),
       }
     );
@@ -83,7 +63,6 @@ export const quizApi = {
       `/quizzes/${quizId}/questions/${questionId}`,
       {
         method: "DELETE",
-        headers: getHeaders(),
       }
     );
   },

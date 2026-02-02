@@ -1,13 +1,13 @@
 import {
+  ConflictException,
   Injectable,
   UnauthorizedException,
-  ConflictException,
 } from '@nestjs/common';
-import { UsersService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { RegisterDto } from './dto/register.dto';
 import { User } from '../users/schema/user.schema';
+import { UsersService } from '../users/user.service';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,10 +36,13 @@ export class AuthService {
   }
 
   async login(user: Omit<User, 'password'> & { _id: string }) {
-    const payload = { email: user.email, sub: user._id, role: user.role };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    const tokens = await this.getTokens(user._id, user.email, user.role);
+    await this.updateRefreshTokenHash(user._id, tokens.refreshToken);
+    return tokens;
+  }
+
+  async logout(userId: string) {
+    await this.usersService.updateRefreshToken(userId, null);
   }
 
   async register(registerDto: RegisterDto): Promise<Omit<User, 'password'>> {
@@ -62,5 +65,48 @@ export class AuthService {
     const userObject = user.toObject() as User & { password: string };
     const { password: _, ...result } = userObject;
     return result;
+  }
+
+  async getTokens(userId: string, email: string, role: string) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: userId, email, role },
+        {
+          secret: process.env.JWT_SECRET,
+          expiresIn: '15m',
+        },
+      ),
+      this.jwtService.signAsync(
+        { sub: userId, email, role },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: '7d',
+        },
+      ),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async updateRefreshTokenHash(userId: string, refreshToken: string) {
+    const hash = await bcrypt.hash(refreshToken, 10);
+    await this.usersService.updateRefreshToken(userId, hash);
+  }
+
+  async validateRefreshToken(userId: string, refreshToken: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user || !user.refreshTokenHash) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshTokenHash);
+    if (!isMatch) {
+      throw new UnauthorizedException('Access Denied');
+    }
+    
+    return user;
   }
 }

@@ -130,12 +130,14 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label
-                  className="text-sm font-medium text-gray-700"
-                  htmlFor="email"
-                >
-                  Email
-                </label>
+                <div className="flex items-center justify-between">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="email"
+                  >
+                    Email
+                  </label>
+                </div>
                 <div className="relative">
                   <Mail
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -146,7 +148,7 @@ export default function LoginPage() {
                     id="email"
                     type="email"
                     placeholder="name@example.com"
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                   />
                 </div>
                 {errors.email && (
@@ -181,7 +183,7 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? "password" : "text"}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                   />
                   <button
                     type="button"
@@ -202,7 +204,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2.5 rounded-sm hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-sm hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

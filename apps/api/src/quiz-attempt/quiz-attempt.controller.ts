@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Param,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    UseGuards,
 } from '@nestjs/common';
-import { QuizAttemptService } from './quiz-attempt.service';
-import { Role } from '../common/enums/role.enum';
-import { SubmitQuizDto } from './dto/submit-quiz.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { Role } from '../common/enums/role.enum';
+import { SubmitQuizDto } from './dto/submit-quiz.dto';
+import { QuizAttemptService } from './quiz-attempt.service';
 
 @Controller('quiz-attempts')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -26,7 +26,7 @@ export class QuizAttemptController {
   @Roles(Role.Apprenant)
   startQuiz(
     @Param('quizId') quizId: string,
-    @CurrentUser('id') studentId: string,
+    @CurrentUser('userId') studentId: string,
   ) {
     return this.quizAttemptService.startQuiz(studentId, quizId);
   }
@@ -37,7 +37,7 @@ export class QuizAttemptController {
   @HttpCode(HttpStatus.CREATED)
   submitQuiz(
     @Param('quizId') quizId: string,
-    @CurrentUser('id') studentId: string,
+    @CurrentUser('userId') studentId: string,
     @Body() submitQuizDto: SubmitQuizDto,
   ) {
     return this.quizAttemptService.submitQuiz(studentId, quizId, submitQuizDto);
@@ -47,7 +47,7 @@ export class QuizAttemptController {
   @Roles(Role.Apprenant)
   getResults(
     @Param('attemptId') attemptId: string,
-    @CurrentUser('id') studentId: string,
+    @CurrentUser('userId') studentId: string,
   ) {
     return this.quizAttemptService.getAttemptResults(attemptId, studentId);
   }
@@ -57,7 +57,7 @@ export class QuizAttemptController {
   @Roles(Role.Apprenant)
   getHistory(
     @Param('quizId') quizId: string,
-    @CurrentUser('id') studentId: string,
+    @CurrentUser('userId') studentId: string,
   ) {
     return this.quizAttemptService.getAttemptHistory(studentId, quizId);
   }

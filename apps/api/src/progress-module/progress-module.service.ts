@@ -58,10 +58,15 @@ export class ProgressModuleService {
     const module = await this.moduleModel.findById(moduleId).select('courseId');
     if (!module) throw new NotFoundException('Module not found');
 
-    const progress = await this.progressModel.findOne({
+    let progress = await this.progressModel.findOne({
       studentId: new Types.ObjectId(studentId),
       courseId: module.courseId,
     });
+
+    if (!progress) {
+      // Auto-initialize if it doesn't exist (e.g. legacy enrollment)
+      progress = await this.initializeCourseProgress(studentId, module.courseId.toString());
+    }
 
     if (!progress) return false;
 
