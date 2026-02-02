@@ -11,7 +11,6 @@ import {
   CheckCircle,
   Clock,
   Edit,
-  GraduationCap,
   HelpCircle,
   LayoutDashboard,
   Loader2,
@@ -236,12 +235,6 @@ export default function QuizDetailsPage({
                                 <Clock size={14} /> Time Limit
                             </span>
                             <span className="text-sm font-medium text-gray-900">{quiz.timeLimit ? `${quiz.timeLimit} mins` : "No Limit"}</span>
-                        </div>
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-50">
-                            <span className="text-sm text-gray-600 flex items-center gap-2">
-                                <GraduationCap size={14} /> Max Attempts
-                            </span>
-                            <span className="text-sm font-medium text-gray-900">{quiz.maxAttempts}</span>
                         </div>
                          <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600 flex items-center gap-2">

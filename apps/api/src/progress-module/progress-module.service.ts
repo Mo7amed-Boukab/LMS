@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Progress } from './schema/progress-module.schema';
+import { CourseLesson, CourseLessonDocument } from 'src/course-lessons/schemas/course-lesson.schema';
 import {
   CourseModuleDocument,
   Module,
 } from 'src/course-modules/schemas/course-module.schema';
+import { Progress } from './schema/progress-module.schema';
 
 @Injectable()
 export class ProgressModuleService {
@@ -13,10 +14,12 @@ export class ProgressModuleService {
     @InjectModel(Progress.name) private progressModel: Model<Progress>,
     @InjectModel(Module.name)
     private moduleModel: Model<CourseModuleDocument>,
+    @InjectModel(CourseLesson.name)
+    private courseLessonModel: Model<CourseLessonDocument>,
   ) {}
 
   /**
-   * 1️⃣ Initialiser la progression (à l'inscription)
+   * 1️ Initialiser la progression (à l'inscription)
    */
   async initializeCourseProgress(studentId: string, courseId: string) {
     // Vérifier si existe déjà
@@ -38,7 +41,7 @@ export class ProgressModuleService {
     const moduleProgress = modules.map((module, index) => ({
       moduleId: module._id,
       isCompleted: false,
-      isUnlocked: index === 0, // ✅ Seul le 1er module déverrouillé
+      isUnlocked: index === 0, // Seul le 1er module déverrouillé
     }));
 
     return await this.progressModel.create({
@@ -49,16 +52,21 @@ export class ProgressModuleService {
   }
 
   /**
-   * 2️⃣ Vérifier si un module est accessible
+   * 2️ Vérifier si un module est accessible
    */
   async canAccessModule(studentId: string, moduleId: string): Promise<boolean> {
     const module = await this.moduleModel.findById(moduleId).select('courseId');
     if (!module) throw new NotFoundException('Module not found');
 
-    const progress = await this.progressModel.findOne({
+    let progress = await this.progressModel.findOne({
       studentId: new Types.ObjectId(studentId),
       courseId: module.courseId,
     });
+
+    if (!progress) {
+      // Auto-initialize if it doesn't exist (e.g. legacy enrollment)
+      progress = await this.initializeCourseProgress(studentId, module.courseId.toString());
+    }
 
     if (!progress) return false;
 
@@ -70,7 +78,7 @@ export class ProgressModuleService {
   }
 
   /**
-   * 3️⃣ Marquer un module comme terminé (appelé après quiz réussi)
+   * 3 Marquer un module comme terminé (appelé après quiz réussi)
    */
   async completeModule(studentId: string, moduleId: string) {
     const module = await this.moduleModel.findById(moduleId).select('courseId');
@@ -109,7 +117,52 @@ export class ProgressModuleService {
   }
 
   /**
-   * 4️⃣ Obtenir la progression d'un cours
+   * 6️ Toggle Lesson Completion
+   */
+  async toggleLessonCompletion(studentId: string, lessonId: string) {
+    
+    // Find the lesson to get the moduleId
+    const lesson = await this.courseLessonModel.findById(lessonId);
+    if (!lesson) throw new NotFoundException('Lesson not found');
+    
+    // Find the module to get the courseId
+    const module = await this.moduleModel.findById(lesson.moduleId).select('courseId');
+    if (!module) throw new NotFoundException('Module of lesson not found');
+
+    const progress = await this.progressModel.findOne({
+      studentId: new Types.ObjectId(studentId),
+      courseId: module.courseId,
+    });
+
+    if (!progress) throw new NotFoundException('Progress not found');
+
+    const lessonIndex = progress.lessonsProgress.findIndex(
+      (l) => l.lessonId.toString() === lessonId,
+    );
+
+    let isCompleted = false;
+
+    if (lessonIndex > -1) {
+      // Unmark
+      progress.lessonsProgress.splice(lessonIndex, 1);
+      isCompleted = false;
+    } else {
+      // Mark
+      progress.lessonsProgress.push({
+        lessonId: new Types.ObjectId(lessonId),
+        completedAt: new Date(),
+      });
+      isCompleted = true;
+    }
+
+    progress.lastAccessedAt = new Date();
+    await progress.save();
+
+    return { isCompleted };
+  }
+
+  /**
+   * 4 Obtenir la progression d'un cours
    */
   async getCourseProgress(studentId: string, courseId: string) {
     const progress = await this.progressModel
@@ -143,7 +196,7 @@ export class ProgressModuleService {
       };
     });
 
-    // ✅ Calculer la progression à la volée
+    // Calculer la progression à la volée
     const completedCount = progress.modules.filter((m) => m.isCompleted).length;
     const overallProgress = Math.round(
       (completedCount / progress.modules.length) * 100,
@@ -151,15 +204,16 @@ export class ProgressModuleService {
 
     return {
       courseId: progress.courseId,
-      overallProgress, // ✅ Calculé dynamiquement
+      overallProgress, 
       modules: enrichedModules,
       completedModules: completedCount,
       totalModules: progress.modules.length,
+      completedLessons: progress.lessonsProgress?.map(l => l.lessonId) || [],
     };
   }
 
   /**
-   * 5️⃣ Prochain module à faire
+   * 5️ Prochain module à faire
    */
   async getNextModule(studentId: string, courseId: string) {
     const progress = await this.progressModel.findOne({

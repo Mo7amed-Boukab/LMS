@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import ResultClient from "./ResultClient";
 
 interface ResultsData {
@@ -43,16 +45,31 @@ export default function ResultsPage({
 
   useEffect(() => {
     const fetchResults = async () => {
-      const token = localStorage.getItem("auth_token");
+      try {
+        const res = await fetch(
+          `http://localhost:4000/quiz-attempts/${resolvedParams.attemptId}/results`,
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
 
-      if (!token) {
-        router.push("/login");
-        return;
+        if (!res.ok) {
+           if (res.status === 401) {
+             router.push('/login');
+             return;
+           }
+           setResults(null);
+        } else {
+           const data = await res.json();
+           setResults(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch results:", err);
+        setResults(null);
+      } finally {
+        setLoading(false);
       }
-
-      const data = await getResults(resolvedParams.attemptId, token);
-      setResults(data);
-      setLoading(false);
     };
 
     fetchResults();
@@ -74,5 +91,13 @@ export default function ResultsPage({
     );
   }
 
-  return <ResultClient results={results} quizId={resolvedParams.quizId} />;
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow bg-gray-50 flex flex-col">
+        <ResultClient results={results} quizId={resolvedParams.quizId} />
+      </main>
+      <Footer />
+    </div>
+  );
 }

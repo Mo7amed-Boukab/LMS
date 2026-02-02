@@ -43,6 +43,13 @@ CourseModuleSchema.virtual('lessons', {
   options: { sort: { order: 1 } },
 });
 
+CourseModuleSchema.virtual('quiz', {
+  ref: 'Quiz',
+  localField: '_id',
+  foreignField: 'moduleId',
+  justOne: true,
+});
+
 // Enable virtuals in toJSON and toObject
 CourseModuleSchema.set('toJSON', { virtuals: true });
 CourseModuleSchema.set('toObject', { virtuals: true });

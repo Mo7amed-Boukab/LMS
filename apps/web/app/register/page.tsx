@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Mail,
-  Lock,
+  ArrowLeft,
+  ArrowRight,
   Eye,
   EyeOff,
-  ArrowRight,
   GraduationCap,
+  Lock,
+  Mail,
   User,
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const registerSchema = z
   .object({
@@ -82,12 +82,12 @@ export default function RegisterPage() {
 
         {/* Content */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 w-fit">
             <div className="bg-red-700 p-2 rounded-md">
               <GraduationCap className="text-white" size={24} />
             </div>
             <span className="text-xl font-bold tracking-tight">ED Academy</span>
-          </div>
+          </Link>
         </div>
 
         <div className="relative z-10 max-w-lg">
@@ -101,8 +101,14 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="relative z-10 text-xs text-zinc-500">
-          © 2024 ED Academy Inc. All rights reserved.
+        <div className="relative z-10">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            Back to Website
+            <ArrowRight size={16} className="transition-transform group-hover:-translate-x-1" />
+          </Link>
         </div>
       </div>
 
@@ -111,9 +117,9 @@ export default function RegisterPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <div className="lg:hidden flex justify-center mb-6">
-              <div className="bg-red-700 p-2 rounded-md">
-                <GraduationCap className="text-white" size={24} />
-              </div>
+              <Link href="/" className="bg-red-700 p-2 rounded-md text-white">
+                <GraduationCap size={24} />
+              </Link>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
               Create an account
@@ -160,7 +166,7 @@ export default function RegisterPage() {
                     id="firstName"
                     type="text"
                     placeholder="John"
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                   />
                 </div>
                 {errors.firstName && (
@@ -187,7 +193,7 @@ export default function RegisterPage() {
                     id="lastName"
                     type="text"
                     placeholder="Doe"
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                   />
                 </div>
                 {errors.lastName && (
@@ -215,7 +221,7 @@ export default function RegisterPage() {
                   id="email"
                   type="email"
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                 />
               </div>
               {errors.email && (
@@ -242,7 +248,7 @@ export default function RegisterPage() {
                   id="password"
                   type={showPassword ? "password" : "text"}
                   placeholder="Create a password"
-                  className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                 />
                 <button
                   type="button"
@@ -276,7 +282,7 @@ export default function RegisterPage() {
                   id="confirmPassword"
                   type={showConfirmPassword ? "password" : "text"}
                   placeholder="Confirm your password"
-                  className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                 />
                 <button
                   type="button"
@@ -327,7 +333,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-medium py-2.5 rounded-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>

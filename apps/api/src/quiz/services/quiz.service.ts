@@ -1,20 +1,20 @@
 import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import {
+    CourseModuleDocument,
+    Module as CourseModuleEntity,
+} from 'src/course-modules/schemas/course-module.schema';
+import { QuizStatus } from '../../common/enums/quiz-status.enum';
 import { CreateQuizDto } from '../dto/create-quiz.dto';
 import { UpdateQuizDto } from '../dto/update-quiz.dto';
-import { InjectModel } from '@nestjs/mongoose';
 import { Quiz } from '../schema/quiz.schema';
-import { Model } from 'mongoose';
-import { QuizStatus } from '../../common/enums/quiz-status.enum';
-import {
-  CourseModuleDocument,
-  Module as CourseModuleEntity,
-} from 'src/course-modules/schemas/course-module.schema';
 
 @Injectable()
 export class QuizService {
@@ -34,7 +34,13 @@ export class QuizService {
         throw new ConflictException('Ce quiz existe déjà pour ce module');
       }
 
-      const quiz = new this.quizModel(createQuizDto);
+      // Convert moduleId string to ObjectId for proper MongoDB reference
+      const quizData = {
+        ...createQuizDto,
+        moduleId: new Types.ObjectId(moduleId),
+      };
+
+      const quiz = new this.quizModel(quizData);
       return quiz.save();
     } catch (error: unknown) {
       if (error instanceof Error) {

@@ -1,20 +1,19 @@
 "use client";
 
 import {
-    authService,
-    LoginCredentials,
-    RegisterData,
-    Role,
-    User,
+  authService,
+  LoginCredentials,
+  RegisterData,
+  Role,
+  User,
 } from "@/lib/auth-service";
-import { tokenStorage } from "@/lib/token-storage";
 import { useRouter } from "next/navigation";
 import {
-    createContext,
-    ReactNode,
-    useContext,
-    useEffect,
-    useState,
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
 
 interface AuthContextType {
@@ -23,7 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,44 +32,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Initialize auth state by checking profile
   useEffect(() => {
-    const initializeAuth = async () => {
-      const token = tokenStorage.get();
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
+    const checkAuth = async () => {
       try {
         const userProfile = await authService.getProfile();
         setUser(userProfile);
-      } catch (error: any) {
-        console.error("Failed to fetch profile:", error);
-        tokenStorage.remove();
-        if (error.message === "Unauthorized" || error.message?.includes("401")) {
-          router.push("/login");
-        }
+      } catch (error) {
+        // Silent fail on initial load if not logged in
+        console.log("Not authenticated or session expired");
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    initializeAuth();
+    checkAuth();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await authService.login(credentials);
-      tokenStorage.set(response.access_token);
-
+      await authService.login(credentials);
+      // After login, fetch profile to confirm state
       const userProfile = await authService.getProfile();
       setUser(userProfile);
 
       // Handle Redirection based on Role
       if (userProfile.role === Role.Formateur) {
         router.push("/teacher");
-      } else if (userProfile.role === Role.Apprenant) {
-        router.push("/");
       } else {
         router.push("/");
       }
@@ -91,8 +80,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    tokenStorage.remove();
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error("Logout error", err);
+    }
     setUser(null);
     router.push("/login");
   };

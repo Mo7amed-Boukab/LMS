@@ -48,9 +48,6 @@ export class Quiz extends Document {
   @Prop({ default: 0 })
   timeLimit: number;
 
-  @Prop({ default: 3 })
-  maxAttempts: number;
-
   @Prop({ default: false })
   shuffleQuestions: boolean;
 

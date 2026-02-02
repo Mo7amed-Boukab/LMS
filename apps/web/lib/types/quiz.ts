@@ -30,7 +30,6 @@ export interface Quiz {
   title: string;
   passingScore: number;
   timeLimit: number;
-  maxAttempts: number;
   shuffleQuestions: boolean;
   showResultsImmediately: boolean;
   status: QuizStatus;
@@ -44,7 +43,6 @@ export interface CreateQuizDto {
   title: string;
   passingScore: number;
   timeLimit?: number;
-  maxAttempts?: number;
   shuffleQuestions?: boolean;
   showResultsImmediately?: boolean;
 }

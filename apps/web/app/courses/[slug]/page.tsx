@@ -6,6 +6,7 @@ import {
   Award,
   BarChart,
   BookOpen,
+  CheckCircle,
   ChevronDown,
   Clock,
   Download,
@@ -21,7 +22,7 @@ import {
   Share2,
   Star,
   Users,
-  Video
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -31,6 +32,8 @@ import Footer from "../../../components/layout/Footer";
 import Header from "../../../components/layout/Header";
 import { getMediaUrl } from "../../../lib/media";
 import { Course, courseApi, CourseLesson, CourseModule } from "../../../lib/services/courseService";
+import { enrollmentApi } from "../../../lib/services/enrollmentService";
+import { progressApi } from "../../../lib/services/progressService";
 
 export default function CourseDetailsPage() {
   const params = useParams();
@@ -38,10 +41,15 @@ export default function CourseDetailsPage() {
   const slug = params.slug as string;
   const { isAuthenticated } = useAuth();
 
+
+
+
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<CourseModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
   
   const [activeTab, setActiveTab] = useState("overview");
   const [isPlayingPromo, setIsPlayingPromo] = useState(false);
@@ -60,6 +68,23 @@ export default function CourseDetailsPage() {
         ]);
         setCourse(courseData);
         setModules(curriculumData);
+
+        if (isAuthenticated) {
+            try {
+                // Check enrollment
+                const { isEnrolled } = await enrollmentApi.checkEnrollment(courseData._id);
+                setIsEnrolled(isEnrolled);
+
+                // If enrolled, fetch value progress
+                if (isEnrolled) {
+                   const progress = await progressApi.getCourseProgress(courseData._id);
+                   setCompletedLessons(progress.completedLessons);
+                }
+            } catch (err) {
+                console.error("Failed to check enrollment/progress:", err);
+            }
+        }
+
       } catch (err) {
         console.error("Failed to load course details:", err);
         setError("Failed to load course details. Please try again later.");
@@ -68,7 +93,42 @@ export default function CourseDetailsPage() {
       }
     }
     loadData();
-  }, [slug]);
+  }, [slug, isAuthenticated]);
+
+  const handleEnroll = async () => {
+    if (!isAuthenticated) {
+        toast.error("You must be logged in to enroll");
+        router.push(`/login?redirect=/courses/${slug}`);
+        return;
+    }
+
+    if (!course) return;
+
+    try {
+        setEnrollmentLoading(true);
+        await enrollmentApi.enroll(course._id);
+        setIsEnrolled(true);
+        toast.success("Successfully enrolled! Happy learning.");
+    } catch (err) {
+        console.error("Enrollment failed:", err);
+        toast.error("Failed to enroll. Please try again.");
+    } finally {
+        setEnrollmentLoading(false);
+    }
+  };
+
+  const handleStartLearning = () => {
+      // Find the first lesson and select it
+      if (modules.length > 0 && modules[0].lessons && modules[0].lessons.length > 0) {
+          const firstLesson = modules[0].lessons[0];
+          setSelectedLesson(firstLesson);
+          setActiveTab("curriculum");
+          // Scroll to player
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+          toast.info("No lessons available yet.");
+      }
+  };
 
   const getEmbedUrl = (url: string) => {
     if (!url) return null;
@@ -81,19 +141,38 @@ export default function CourseDetailsPage() {
     return null;
   };
 
-  const handleLessonSelect = (lesson: CourseLesson) => {
-      if (!isAuthenticated) {
-          toast.error("You must be logged in to view lesson content");
+  const handleLessonSelect = async (lesson: CourseLesson) => {
+      // Allow preview lessons to be viewed without login
+      if (!lesson.isPreview && !isAuthenticated) {
+          toast.error("You must be logged in to view this lesson");
+          router.push(`/login?redirect=/courses/${slug}`);
+          return;
+      }
+
+      // Check if user is enrolled for non-preview lessons
+      if (!lesson.isPreview && !isEnrolled) {
+          toast.error("You must be enrolled to view this lesson");
           return;
       }
 
       if (selectedLesson?._id === lesson._id) {
+          // Allow closing the player or just stay? 
+          // Current logic was toggle off if same selected.
           setSelectedLesson(null);
       } else {
           setSelectedLesson(lesson);
-          // Mark as read immediately when selected/viewed
-          if (!completedLessons.includes(lesson._id)) {
+          
+          // Mark as read if enrolled and not already completed
+          if (isEnrolled && !completedLessons.includes(lesson._id)) {
+              // Optimistic update
               setCompletedLessons(prev => [...prev, lesson._id]);
+              try {
+                  await progressApi.toggleLesson(lesson._id);
+              } catch (error) {
+                  console.error("Failed to update progress:", error);
+                  // Revert if failed
+                  setCompletedLessons(prev => prev.filter(id => id !== lesson._id));
+              }
           }
       }
   };
@@ -317,8 +396,7 @@ export default function CourseDetailsPage() {
                               
                               <div className="p-0 border-t border-gray-100">
                                 {moduleLessons.length > 0 ? (
-                                  <>
-                                    {moduleLessons.map((lesson, lessonIndex) => {
+                                    moduleLessons.map((lesson, lessonIndex) => {
                                         const isSelected = selectedLesson?._id === lesson._id;
                                         
                                         const prevLesson = lessonIndex > 0 ? moduleLessons[lessonIndex - 1] : null;
@@ -333,7 +411,9 @@ export default function CourseDetailsPage() {
                                                   }`}
                                               >
                                                 <div className="flex items-center gap-3">
-                                                  {lesson.type === 'VIDEO' ? (
+                                                  {completedLessons.includes(lesson._id) ? (
+                                                      <CheckCircle className="text-red-700 font-bold" size={18} />
+                                                  ) : lesson.type === 'VIDEO' ? (
                                                       <PlayCircle className={isSelected ? "text-red-700" : "text-[#896168]"} size={18} />
                                                   ) : ( 
                                                       <FileText className={isSelected ? "text-red-700" : "text-[#896168]"} size={18} />
@@ -342,12 +422,15 @@ export default function CourseDetailsPage() {
                                                     {lesson.title}
                                                   </span>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                     {!isAuthenticated && (
-                                                         <Lock size={14} className="text-gray-400" />
-                                                     )}
-                                                     <span className="text-xs text-[#896168]">{lesson.type}</span>
-                                                </div>
+                                                 <div className="flex items-center gap-3">
+                                                       {lesson.isPreview && (
+                                                           <span className="text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">PREVIEW</span>
+                                                       )}
+                                                       {!isEnrolled && !lesson.isPreview && (
+                                                           <Lock size={14} className="text-gray-400" />
+                                                       )}
+                                                       <span className="text-xs text-[#896168]">{lesson.type}</span>
+                                                 </div>
                                               </div>
 
                                               {/* Inline Player */}
@@ -431,36 +514,42 @@ export default function CourseDetailsPage() {
                                               )}
                                           </div>
                                         );
-                                    })}
-                                    
-                                    {/* Module Quiz Row */}
+                                    })
+                                ) : (
+                                    <div className="px-5 py-3 text-sm text-gray-400 italic">No lessons in this module</div>
+                                )}
+                                
+                                {/* Module Quiz Row - Always visible if a quiz exists OR if there are lessons */}
+                                {(module.quiz || moduleLessons.length > 0) && (
                                      <div 
                                         className={`flex items-center justify-between px-5 py-4 border-t-2 border-dashed border-gray-200 transition-colors ${
-                                            isModuleCompleted && isAuthenticated
+                                            isModuleCompleted && isAuthenticated && module.quiz
                                                 ? "bg-white cursor-pointer hover:bg-gray-50" 
                                                 : "bg-[#fcf8f9] cursor-not-allowed opacity-80"
                                         }`}
                                         onClick={() => {
-                                            if (isModuleCompleted && isAuthenticated) {
-                                                toast.info("Quiz feature coming soon!");
+                                            if (isModuleCompleted && isAuthenticated && module.quiz) {
+                                                router.push(`/student/quiz/${module.quiz._id}`);
                                             } else if (!isAuthenticated) {
                                                 toast.error("Please login to take the quiz");
+                                            } else if (!module.quiz) {
+                                                toast.info("No quiz available for this module.");
                                             } else {
                                                 toast.error("Please complete all lessons in this module to unlock the quiz.");
                                             }
                                         }}
                                     >
                                         <div className="flex items-center gap-3">
-                                            {isModuleCompleted && isAuthenticated ? (
+                                            {isModuleCompleted && isAuthenticated && module.quiz ? (
                                                 <BookOpen size={18} className="text-[#cb1030]" />
                                             ) : (
                                                 <Lock size={18} className="#896168" />
                                             )}
                                             <div>
-                                                <span className={`text-sm font-medium block ${isModuleCompleted && isAuthenticated ? "text-[#cb1030]" : "text-[#896168]"}`}>
-                                                    Module Quiz
+                                                <span className={`text-sm font-medium block ${isModuleCompleted && isAuthenticated && module.quiz ? "text-[#cb1030]" : "text-[#896168]"}`}>
+                                                    {module.quiz?.title || "Module Quiz"}
                                                 </span>
-                                                {(!isModuleCompleted || !isAuthenticated) && (
+                                                {((!isModuleCompleted || !isAuthenticated) && moduleLessons.length > 0) && (
                                                     <span className="text-xs text-[#896168]">
                                                         Complete all {moduleLessons.length} lessons to unlock
                                                     </span>
@@ -469,13 +558,10 @@ export default function CourseDetailsPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-xs text-[#896168]">
-                                                10 questions
+                                                {module.quiz ? "Assessment" : "Not scheduled"}
                                             </span>
                                         </div>
                                     </div>
-                                  </>
-                                ) : (
-                                    <div className="px-5 py-3 text-sm text-gray-400 italic">No lessons in this module</div>
                                 )}
                               </div>
                             </details>
@@ -518,7 +604,7 @@ export default function CourseDetailsPage() {
                           </div>
                         <p className="text-sm text-[#896168] leading-relaxed">
                           {course.instructorId.email}
-                        </p>
+                          </p>
                       </div>
                     </div>
                   </div>
@@ -657,12 +743,22 @@ export default function CourseDetailsPage() {
                         {discountPercentage}% OFF
                       </span>
                     </div>
-                    <button className="w-full py-3 px-4 bg-red-700 hover:bg-red-800 text-white rounded font-bold text-sm shadow-[0_0_15px_rgba(203,16,48,0.15)] transition-all active:scale-[0.98] mb-3">
-                      Enroll Now
-                    </button>
-                    <button className="w-full py-2.5 px-4 bg-transparent border border-gray-200 hover:border-[#cb1030] text-[#181112] hover:text-[#cb1030] rounded font-bold text-sm transition-all mb-6">
-                      Add to Favorites
-                    </button>
+                    {isEnrolled ? (
+                        <button 
+                            onClick={handleStartLearning}
+                            className="w-full py-3 px-4 bg-red-700 hover:bg-red-800 text-white rounded font-bold text-sm shadow-[0_0_15px_rgba(203,16,48,0.15)] transition-all active:scale-[0.98] mb-3"
+                        >
+                            Start Learning
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={handleEnroll}
+                            disabled={enrollmentLoading}
+                            className="w-full py-3 px-4 bg-red-700 hover:bg-red-800 text-white rounded font-bold text-sm shadow-[0_0_15px_rgba(203,16,48,0.15)] transition-all active:scale-[0.98] mb-3 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {enrollmentLoading ? "Enrolling..." : "Enroll Now"}
+                        </button>
+                    )}
                     <div className="text-center text-xs text-[#896168] mb-6">
                       30-Day Money-Back Guarantee
                     </div>

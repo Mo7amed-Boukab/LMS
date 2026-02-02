@@ -1,5 +1,4 @@
 import { apiClient } from "./api-client";
-import { tokenStorage } from "./token-storage";
 
 export enum Role {
   Apprenant = "apprenant",
@@ -41,11 +40,10 @@ export const authService = {
   },
 
   async getProfile(): Promise<User> {
-    const token = tokenStorage.get();
-    return apiClient.get<User>("/auth/profile", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    return apiClient.get<User>("/auth/profile");
+  },
+
+  async logout(): Promise<void> {
+    return apiClient.post("/auth/logout");
   },
 };
