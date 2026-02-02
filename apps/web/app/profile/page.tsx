@@ -1,24 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import CourseCard from "@/components/home/CourseCard";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import { useAuth } from "@/context/auth-context";
+import { getMediaUrl } from "@/lib/media";
+import { Enrollment, enrollmentApi } from "@/lib/services/enrollmentService";
 import {
-  User as UserIcon,
-  Mail,
-  Shield,
   Book,
   GraduationCap,
-  Camera,
+  Mail,
+  Shield,
+  User as UserIcon
 } from "lucide-react";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-
+import Link from "next/link";
+import { useEffect, useState } from "react";
+ 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<
     "profile" | "security" | "learning"
   >("profile");
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [isLoadingEnrollments, setIsLoadingEnrollments] = useState(false);
+ 
+  useEffect(() => {
+    if (user && activeTab === "learning") {
+      const fetchEnrollments = async () => {
+        setIsLoadingEnrollments(true);
+        try {
+          const data = await enrollmentApi.getMyCourses();
+          setEnrollments(data);
+        } catch (error) {
+          console.error("Failed to fetch enrollments", error);
+        } finally {
+          setIsLoadingEnrollments(false);
+        }
+      };
+      fetchEnrollments();
+    }
+  }, [user, activeTab]);
 
   if (isLoading) {
     return (
@@ -266,23 +287,50 @@ export default function ProfilePage() {
                     Browse Courses
                   </Link>
                 </div>
-                <div className="text-center py-12">
-                  <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400">
-                    <Book size={32} />
+                
+                {isLoadingEnrollments ? (
+                  <div className="flex justify-center py-12">
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700"></div>
                   </div>
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">
-                    No enrollments yet
-                  </h4>
-                  <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-                    You haven't enrolled in any courses yet. Explore our catalog
-                    to find the perfect course for you.
-                  </p>
-                  <Link href="/courses">
-                    <button className="px-4 py-2 bg-red-700 text-white text-sm font-medium rounded-sm hover:bg-red-800 transition-colors">
-                      Browse Courses
-                    </button>
-                  </Link>
-                </div>
+                ) : enrollments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="inline-flex justify-center items-center w-16 h-16 rounded-full bg-gray-100 mb-4 text-gray-400">
+                      <Book size={32} />
+                    </div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                      No enrollments yet
+                    </h4>
+                    <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
+                      You haven't enrolled in any courses yet. Explore our catalog
+                      to find the perfect course for you.
+                    </p>
+                    <Link href="/courses">
+                      <button className="px-4 py-2 bg-red-700 text-white text-sm font-medium rounded-sm hover:bg-red-800 transition-colors">
+                        Browse Courses
+                      </button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {enrollments.map((enrollment) => (
+                      <CourseCard
+                        key={enrollment._id}
+                        category={enrollment.courseId.category}
+                        imageUrl={getMediaUrl(enrollment.courseId.thumbnail)}
+                        rating="4.8"
+                        reviewCount="0"
+                        title={enrollment.courseId.title}
+                        description={enrollment.courseId.description}
+                        instructorName={enrollment.courseId.instructorId?.firstName ? `${enrollment.courseId.instructorId.firstName} ${enrollment.courseId.instructorId.lastName}` : "Instructor"}
+                        instructorAvatar={`https://ui-avatars.com/api/?name=${enrollment.courseId.instructorId?.firstName || 'I'}+${enrollment.courseId.instructorId?.lastName || 'N'}&background=random&color=fff&background=ef4444`}
+                        price={`${enrollment.courseId.price.toFixed(2)} DH`}
+                        slug={enrollment.courseId._id}
+                        showContinueLearning={true}
+                        variant="horizontal"
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

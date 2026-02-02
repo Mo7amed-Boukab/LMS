@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Mail,
-  Lock,
+  ArrowLeft,
+  ArrowRight,
   Eye,
   EyeOff,
-  ArrowRight,
   GraduationCap,
+  Lock,
+  Mail,
 } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -68,12 +67,12 @@ export default function LoginPage() {
 
         {/* Content */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="bg-red-700 p-2 rounded">
+          <Link href="/" className="flex items-center gap-3 w-fit">
+            <div className="bg-red-700 p-2 rounded-md">
               <GraduationCap className="text-white" size={24} />
             </div>
             <span className="text-xl font-bold tracking-tight">ED Academy</span>
-          </div>
+          </Link>
         </div>
 
         <div className="relative z-10 max-w-lg">
@@ -87,8 +86,14 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="relative z-10 text-xs text-zinc-500">
-          © 2024 ED Academy Inc. All rights reserved.
+        <div className="relative z-10">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            Back to Website
+            <ArrowRight size={16} className="transition-transform group-hover:-translate-x-1" />
+          </Link>
         </div>
       </div>
 
@@ -97,9 +102,9 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <div className="lg:hidden flex justify-center mb-6">
-              <div className="bg-red-700 p-2 rounded">
+              <Link href="/" className="bg-red-700 p-2 rounded-md">
                 <GraduationCap className="text-white" size={24} />
-              </div>
+              </Link>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
               Welcome back
@@ -130,14 +135,12 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label
-                    className="text-sm font-medium text-gray-700"
-                    htmlFor="email"
-                  >
-                    Email
-                  </label>
-                </div>
+                <label
+                  className="text-sm font-medium text-gray-700"
+                  htmlFor="email"
+                >
+                  Email
+                </label>
                 <div className="relative">
                   <Mail
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -158,7 +161,7 @@ export default function LoginPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <label
                     className="text-sm font-medium text-gray-700"
@@ -181,7 +184,7 @@ export default function LoginPage() {
                   <input
                     {...register("password")}
                     id="password"
-                    type={showPassword ? "password" : "text"}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     className="w-full pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-sm text-sm focus:ring-1 focus:ring-red-500/20 focus:border-red-300 outline-none transition-all placeholder:text-gray-400"
                   />
@@ -292,7 +295,7 @@ export default function LoginPage() {
                 href="/register"
                 className="font-semibold text-red-700 hover:text-red-800 hover:underline transition-colors"
               >
-                Sign up
+                Sign Up
               </Link>
             </p>
           </form>
