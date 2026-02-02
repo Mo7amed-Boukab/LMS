@@ -27,6 +27,15 @@ export class Progress extends Document {
 
   @Prop({ type: [ModuleProgressSchema], default: [] })
   modules: ModuleProgress[];
+
+  @Prop({
+    type: [{ lessonId: Types.ObjectId, completedAt: Date }],
+    default: [],
+  })
+  lessonsProgress: { lessonId: Types.ObjectId; completedAt: Date }[];
+
+  @Prop({ default: Date.now })
+  lastAccessedAt: Date;
 }
 
 export const ProgressSchema = SchemaFactory.createForClass(Progress);

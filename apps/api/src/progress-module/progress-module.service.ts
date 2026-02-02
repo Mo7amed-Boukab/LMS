@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Progress } from './schema/progress-module.schema';
+import { CourseLesson, CourseLessonDocument } from 'src/course-lessons/schemas/course-lesson.schema';
 import {
   CourseModuleDocument,
   Module,
 } from 'src/course-modules/schemas/course-module.schema';
+import { Progress } from './schema/progress-module.schema';
 
 @Injectable()
 export class ProgressModuleService {
@@ -13,6 +14,8 @@ export class ProgressModuleService {
     @InjectModel(Progress.name) private progressModel: Model<Progress>,
     @InjectModel(Module.name)
     private moduleModel: Model<CourseModuleDocument>,
+    @InjectModel(CourseLesson.name)
+    private courseLessonModel: Model<CourseLessonDocument>,
   ) {}
 
   /**
@@ -109,6 +112,51 @@ export class ProgressModuleService {
   }
 
   /**
+   * 6️ Toggle Lesson Completion
+   */
+  async toggleLessonCompletion(studentId: string, lessonId: string) {
+    
+    // Find the lesson to get the moduleId
+    const lesson = await this.courseLessonModel.findById(lessonId);
+    if (!lesson) throw new NotFoundException('Lesson not found');
+    
+    // Find the module to get the courseId
+    const module = await this.moduleModel.findById(lesson.moduleId).select('courseId');
+    if (!module) throw new NotFoundException('Module of lesson not found');
+
+    const progress = await this.progressModel.findOne({
+      studentId: new Types.ObjectId(studentId),
+      courseId: module.courseId,
+    });
+
+    if (!progress) throw new NotFoundException('Progress not found');
+
+    const lessonIndex = progress.lessonsProgress.findIndex(
+      (l) => l.lessonId.toString() === lessonId,
+    );
+
+    let isCompleted = false;
+
+    if (lessonIndex > -1) {
+      // Unmark
+      progress.lessonsProgress.splice(lessonIndex, 1);
+      isCompleted = false;
+    } else {
+      // Mark
+      progress.lessonsProgress.push({
+        lessonId: new Types.ObjectId(lessonId),
+        completedAt: new Date(),
+      });
+      isCompleted = true;
+    }
+
+    progress.lastAccessedAt = new Date();
+    await progress.save();
+
+    return { isCompleted };
+  }
+
+  /**
    * 4 Obtenir la progression d'un cours
    */
   async getCourseProgress(studentId: string, courseId: string) {
@@ -151,10 +199,11 @@ export class ProgressModuleService {
 
     return {
       courseId: progress.courseId,
-      overallProgress, // Calculé dynamiquement
+      overallProgress, 
       modules: enrichedModules,
       completedModules: completedCount,
       totalModules: progress.modules.length,
+      completedLessons: progress.lessonsProgress?.map(l => l.lessonId) || [],
     };
   }
 
