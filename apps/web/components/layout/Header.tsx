@@ -18,9 +18,9 @@ export default function Header() {
             </div>
             <Link
               href="/"
-              className="text-xl font-bold tracking-tight text-[#1a1a1a]"
+              className="text-xl font-extrabold tracking-tight text-[#1a1a1a]"
             >
-              ED Academy
+               Bright Academy
             </Link>
           </div>
 

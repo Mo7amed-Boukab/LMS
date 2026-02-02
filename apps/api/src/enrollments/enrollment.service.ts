@@ -35,8 +35,11 @@ export class EnrollmentService {
 
     // Initialize progress tracking
     await this.progressService.initializeCourseProgress(studentId, courseId);
-
-    return enrollment;
+ 
+    return enrollment.populate({
+      path: 'courseId',
+      populate: { path: 'instructorId', select: 'firstName lastName' }
+    });
   }
 
   async checkEnrollment(studentId: string, courseId: string) {
@@ -44,8 +47,11 @@ export class EnrollmentService {
       studentId: new Types.ObjectId(studentId),
       courseId: new Types.ObjectId(courseId),
       status: EnrollmentStatus.ACTIVE,
+    }).populate({
+      path: 'courseId',
+      populate: { path: 'instructorId', select: 'firstName lastName' }
     });
-
+ 
     return {
       isEnrolled: !!enrollment,
       enrollment,
@@ -55,7 +61,10 @@ export class EnrollmentService {
   async getStudentEnrollments(studentId: string) {
     return await this.enrollmentModel
       .find({ studentId: new Types.ObjectId(studentId) })
-      .populate('courseId') // Assuming we want basic course info
+      .populate({
+        path: 'courseId',
+        populate: { path: 'instructorId', select: 'firstName lastName' }
+      })
       .sort({ enrolledAt: -1 });
   }
 }

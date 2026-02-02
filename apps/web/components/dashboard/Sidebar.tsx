@@ -49,7 +49,7 @@ export default function Sidebar() {
             <GraduationCap className="text-white" size={20} />
           </div>
           <div>
-            <h1 className="text-base font-bold leading-none">ED Academy</h1>
+            <h1 className="text-base font-bold leading-none">Bright Academy</h1>
             <span className="text-xs text-zinc-500 uppercase tracking-wider">
               Instructor Portal
             </span>

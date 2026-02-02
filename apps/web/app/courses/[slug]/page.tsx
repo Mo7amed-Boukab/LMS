@@ -759,9 +759,6 @@ export default function CourseDetailsPage() {
                             {enrollmentLoading ? "Enrolling..." : "Enroll Now"}
                         </button>
                     )}
-                    <button className="w-full py-2.5 px-4 bg-transparent border border-gray-200 hover:border-[#cb1030] text-[#181112] hover:text-[#cb1030] rounded font-bold text-sm transition-all mb-6">
-                      Add to Favorites
-                    </button>
                     <div className="text-center text-xs text-[#896168] mb-6">
                       30-Day Money-Back Guarantee
                     </div>

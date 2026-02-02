@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import CourseCard from "../../components/home/CourseCard";
 import Footer from "../../components/layout/Footer";
 import Header from "../../components/layout/Header";
@@ -78,9 +78,8 @@ function CustomDropdown({
     <div className="relative min-w-[200px]" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border rounded text-sm transition-all ${
-          isOpen ? "border-red-600 ring-1 ring-red-500/10" : "border-gray-200 hover:border-gray-300 text-gray-700"
-        }`}
+        className={`w-full flex items-center justify-between px-4 py-2.5 bg-white border rounded text-sm transition-all ${isOpen ? "border-red-600 ring-1 ring-red-500/10" : "border-gray-200 hover:border-gray-300 text-gray-700"
+          }`}
       >
         <span className="truncate">{getDisplayText()}</span>
         <ChevronDown
@@ -92,21 +91,20 @@ function CustomDropdown({
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1 max-h-60 overflow-y-auto">
           {options.map((option) => {
-             const isSelected = selected.includes(option);
-             return (
+            const isSelected = selected.includes(option);
+            return (
               <button
                 key={option}
                 onClick={() => handleSelect(option)}
-                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                  isSelected
+                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between ${isSelected
                     ? "text-red-600 font-medium bg-red-50"
                     : "text-gray-600"
-                }`}
+                  }`}
               >
                 {option}
                 {isSelected && <Check size={14} />}
               </button>
-             );
+            );
           })}
         </div>
       )}
@@ -114,7 +112,7 @@ function CustomDropdown({
   );
 }
 
-export default function CoursesPage() {
+function CoursesContent() {
   const searchParams = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,7 +121,7 @@ export default function CoursesPage() {
     page: 1,
     pages: 1,
   });
-  
+
   // Internal state for multi-select
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
@@ -221,7 +219,7 @@ export default function CoursesPage() {
           {/* Courses Content Section */}
           <div className="px-6 pt-10 pb-12 md:px-10 min-h-full">
             <div className="max-w-[1370px] mx-auto">
-              
+
               {/* Controls Line (Count + Filter) */}
               <div className="flex flex-row items-center justify-between mb-8">
                 <p className="text-gray-500 text-sm">
@@ -241,9 +239,9 @@ export default function CoursesPage() {
               {activeFiltersCount > 0 && (
                 <div className="flex flex-wrap gap-2 items-center mb-8">
                   {selectedCategories.map((cat) => (
-                    <div 
+                    <div
                       key={cat}
-                      className="flex items-center gap-1.5 bg-red-700/10 text-red-700 border border-red-700/20 rounded-full px-3 py-1 transition-colors hover:bg-red-700/20 cursor-pointer group" 
+                      className="flex items-center gap-1.5 bg-red-700/10 text-red-700 border border-red-700/20 rounded-full px-3 py-1 transition-colors hover:bg-red-700/20 cursor-pointer group"
                       onClick={() => setSelectedCategories(selectedCategories.filter(c => c !== cat))}
                     >
                       <span className="text-xs font-bold">{cat}</span>
@@ -251,12 +249,12 @@ export default function CoursesPage() {
                     </div>
                   ))}
                   {filters.search && (
-                    <div className="flex items-center gap-1.5 bg-[#f4f0f1] text-[#1a1a1a] border border-[#e6dbdd] rounded-full px-3 py-1 transition-colors hover:bg-[#e6dbdd] cursor-pointer group" onClick={() => setFilters({...filters, search: undefined})}>
+                    <div className="flex items-center gap-1.5 bg-[#f4f0f1] text-[#1a1a1a] border border-[#e6dbdd] rounded-full px-3 py-1 transition-colors hover:bg-[#e6dbdd] cursor-pointer group" onClick={() => setFilters({ ...filters, search: undefined })}>
                       <span className="text-xs font-medium">"{filters.search}"</span>
                       <X size={14} className="text-gray-500 group-hover:text-[#1a1a1a]" />
                     </div>
                   )}
-                  <button 
+                  <button
                     onClick={clearFilters}
                     className="text-xs font-bold text-red-700 hover:underline ml-2"
                   >
@@ -271,12 +269,12 @@ export default function CoursesPage() {
                 </div>
               ) : courses.length === 0 ? (
                 <div className="flex flex-col justify-center items-center py-20 text-center">
-                   <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 mx-auto">
                     <Search className="text-gray-300" size={32} />
                   </div>
                   <p className="text-gray-500 text-lg mb-2">No courses found</p>
                   <p className="text-gray-400 text-sm mb-4">Try adjusting your filters or search terms</p>
-                   <button 
+                  <button
                     onClick={clearFilters}
                     className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 transition-colors"
                   >
@@ -330,11 +328,10 @@ export default function CoursesPage() {
                           return (
                             <button
                               key={pageNumber}
-                              className={`flex items-center justify-center w-10 h-10 rounded text-sm font-medium border transition-all ${
-                                pagination.page === pageNumber
+                              className={`flex items-center justify-center w-10 h-10 rounded text-sm font-medium border transition-all ${pagination.page === pageNumber
                                   ? "bg-red-700 text-white border-red-700 shadow-sm"
                                   : "bg-white border-gray-200 text-gray-600 hover:border-gray-400 hover:bg-gray-50"
-                              }`}
+                                }`}
                               onClick={() => handlePageChange(pageNumber)}
                             >
                               {pageNumber}
@@ -374,5 +371,21 @@ export default function CoursesPage() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function CoursesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700"></div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <CoursesContent />
+    </Suspense>
   );
 }
