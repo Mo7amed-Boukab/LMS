@@ -9,10 +9,7 @@ export class EnrollmentController {
   constructor(private readonly enrollmentService: EnrollmentService) {}
 
   @Post(':courseId')
-  async enroll(
-    @CurrentUser() user: any,
-    @Param('courseId') courseId: string,
-  ) {
+  async enroll(@CurrentUser() user: any, @Param('courseId') courseId: string) {
     return this.enrollmentService.enroll(user.userId, courseId);
   }
 
@@ -27,5 +24,10 @@ export class EnrollmentController {
   @Get('my-courses')
   async getMyCourses(@CurrentUser() user: any) {
     return this.enrollmentService.getStudentEnrollments(user.userId);
+  }
+
+  @Get('instructor-students')
+  async getInstructorStudents(@CurrentUser() user: any) {
+    return this.enrollmentService.getInstructorStudents(user.userId);
   }
 }
