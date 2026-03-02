@@ -30,17 +30,23 @@ export const apiClient = {
           // Retry original request
           return this.request<T>(endpoint, options, true);
         } else {
-          // If refresh fails, clear session and redirect to login
+          // If refresh fails, clear session and redirect to login ONLY if they had a session
           if (typeof window !== 'undefined') {
+             const hadSession = document.cookie.includes('_auth_role=');
              document.cookie = '_auth_role=; path=/; Max-Age=0';
-             window.location.href = '/login';
+             if (hadSession && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                 window.location.href = '/login';
+             }
           }
         }
       } catch (error) {
         console.error("Auto-refresh failed", error);
         if (typeof window !== 'undefined') {
+             const hadSession = document.cookie.includes('_auth_role=');
              document.cookie = '_auth_role=; path=/; Max-Age=0';
-             window.location.href = '/login';
+             if (hadSession && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                 window.location.href = '/login';
+             }
         }
       }
     }
