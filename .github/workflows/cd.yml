@@ -1,0 +1,32 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-api:
+    name: Deploy API to Render
+    runs-on: ubuntu-latest
+    # Only deploy after CI passes
+    needs: []
+    
+    steps:
+      - name: Deploy API to Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_API_DEPLOY_HOOK }}"
+        env:
+          RENDER_API_DEPLOY_HOOK: ${{ secrets.RENDER_API_DEPLOY_HOOK }}
+
+  deploy-web:
+    name: Deploy Web to Render
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy Web to Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_WEB_DEPLOY_HOOK }}"
+        env:
+          RENDER_WEB_DEPLOY_HOOK: ${{ secrets.RENDER_WEB_DEPLOY_HOOK }}

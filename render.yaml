@@ -1,0 +1,41 @@
+# Render Blueprint - Infrastructure as Code
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API (NestJS)
+  - type: web
+    name: lms-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    branch: main
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: MONGO_URI
+        sync: false # Set manually in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false # Set to your web app URL
+
+  # Frontend (Next.js)
+  - type: web
+    name: lms-web
+    runtime: docker
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: ./apps/web
+    branch: main
+    plan: free
+    buildCommand: ""
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false # Set to your API URL

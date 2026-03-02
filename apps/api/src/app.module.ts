@@ -8,6 +8,7 @@ import { CourseModulesModule } from './course-modules/course-modules.module';
 import { CoursesModule } from './courses/courses.module';
 import { DatabaseModule } from './database/database.module';
 import { EnrollmentModule } from './enrollments/enrollment.module';
+import { HealthModule } from './health/health.module';
 import { ProgressModuleModule } from './progress-module/progress-module.module';
 import { QuizAttempModule } from './quiz-attempt/quiz-attempt.module';
 import { QuizModule } from './quiz/quiz.module';
@@ -50,6 +51,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     QuizAttempModule,
     ProgressModuleModule,
     EnrollmentModule,
+    HealthModule,
   ],
   providers: [
     {

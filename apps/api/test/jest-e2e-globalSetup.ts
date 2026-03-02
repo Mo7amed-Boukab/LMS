@@ -1,3 +1,4 @@
+import { execSync } from 'child_process';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 /**
@@ -24,7 +25,6 @@ export default async function globalSetup() {
 
 function findSystemMongod(): string | undefined {
   try {
-    const { execSync } = require('child_process');
     const result = execSync(
       process.platform === 'win32' ? 'where.exe mongod' : 'which mongod',
       { encoding: 'utf-8', timeout: 5000 },

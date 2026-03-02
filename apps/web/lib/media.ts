@@ -2,7 +2,7 @@ export const getMediaUrl = (path: string | undefined | null) => {
   if (!path) return "/images/placeholder-course.jpg";
   
   // Normalize backward slashes to forward slashes (useful for Windows paths)
-  let normalizedPath = path.replace(/\\/g, "/");
+  const normalizedPath = path.replace(/\\/g, "/");
   
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 

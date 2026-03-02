@@ -4,7 +4,7 @@ let refreshTokenPromise: Promise<Response> | null = null;
 
 export const apiClient = {
   async request<T>(endpoint: string, options?: RequestInit, isRetry = false): Promise<T> {
-    let response = await fetch(`${API_URL}${endpoint}`, {
+    const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       credentials: "include", // Ensure cookies are sent
       headers: {

@@ -1,11 +1,11 @@
 import {
-    Body,
-    Controller,
-    Get,
-    Post,
-    Request,
-    Res,
-    UseGuards,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -36,7 +36,7 @@ export class AuthController {
     const cookieOptions = {
       httpOnly: true,
       secure: isProduction,
-      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+      sameSite: isProduction ? 'none' : 'lax',
     };
 
     response.cookie('Authentication', accessToken, {
@@ -99,7 +99,7 @@ export class AuthController {
     const cookieOptions = {
       httpOnly: true,
       secure: isProduction,
-      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+      sameSite: isProduction ? 'none' : 'lax',
     };
 
     // 4. Update cookies
