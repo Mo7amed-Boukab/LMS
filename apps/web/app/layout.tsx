@@ -12,8 +12,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "ED Academy",
-  description: "ED Academy Learning Management System",
+  title: " Bright Academy",
+  description: " Bright Academy E-Learning Management System",
 };
 
 export default function RootLayout({
@@ -53,7 +53,7 @@ export default function RootLayout({
               style: {
                 background: 'white',
                 color: '#1a1a1a',
-                borderRadius: '8px',
+                borderRadius: '4px',
                 border: 'none',
                 borderLeft: '5px solid #cb1030',
                 padding: '16px',

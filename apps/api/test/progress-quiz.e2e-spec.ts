@@ -9,8 +9,8 @@ import { AppModule } from '../src/app.module';
 import { QuestionType } from '../src/common/enums/question-type.enum';
 import { Role } from '../src/common/enums/role.enum';
 import {
-  CourseLesson,
-  LessonContentType,
+    CourseLesson,
+    LessonContentType,
 } from '../src/course-lessons/schemas/course-lesson.schema';
 import { Module as CourseModule } from '../src/course-modules/schemas/course-module.schema';
 import { Course } from '../src/courses/schemas/course.schema';
@@ -71,8 +71,8 @@ describe('Progression + Quiz (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoServer.stop();
+    if (app) await app.close();
+    if (mongoServer) await mongoServer.stop();
   });
 
   it('enroll initializes progress, progress endpoints work, and quiz-attempt start/submit works', async () => {

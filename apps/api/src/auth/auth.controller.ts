@@ -1,11 +1,11 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Request,
-  Res,
-  UseGuards,
+    Body,
+    Controller,
+    Get,
+    Post,
+    Request,
+    Res,
+    UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -32,24 +32,26 @@ export class AuthController {
       user as typeof user & { _id: string },
     );
 
-    response.cookie('Authentication', accessToken, {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+    };
+
+    response.cookie('Authentication', accessToken, {
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000, // 15 mins
     });
 
     response.cookie('Refresh', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     response.cookie('Role', user.role, {
+      ...cookieOptions,
       httpOnly: false, // Accessible by client/middleware
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -93,25 +95,27 @@ export class AuthController {
     // 3. Update hash in DB
     await this.authService.updateRefreshTokenHash(userId, newRefreshToken);
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+    };
+
     // 4. Update cookies
     response.cookie('Authentication', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000,
     });
 
     response.cookie('Refresh', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     response.cookie('Role', req.user.role, {
+      ...cookieOptions,
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 

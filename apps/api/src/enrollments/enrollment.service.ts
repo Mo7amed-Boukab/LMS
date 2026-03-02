@@ -67,4 +67,50 @@ export class EnrollmentService {
       })
       .sort({ enrolledAt: -1 });
   }
+
+  async getInstructorStudents(instructorId: string) {
+    return await this.enrollmentModel.aggregate([
+      {
+        $lookup: {
+          from: 'courses',
+          localField: 'courseId',
+          foreignField: '_id',
+          as: 'course',
+        },
+      },
+      { $unwind: '$course' },
+      {
+        $match: {
+          'course.instructorId': new Types.ObjectId(instructorId),
+          status: EnrollmentStatus.ACTIVE,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'studentId',
+          foreignField: '_id',
+          as: 'student',
+        },
+      },
+      { $unwind: '$student' },
+      {
+        $group: {
+          _id: '$student._id',
+          firstName: { $first: '$student.firstName' },
+          lastName: { $first: '$student.lastName' },
+          email: { $first: '$student.email' },
+          joinedAt: { $min: '$enrolledAt' },
+          courses: {
+            $push: {
+              courseId: '$course._id',
+              title: '$course.title',
+              enrolledAt: '$enrolledAt',
+            },
+          },
+        },
+      },
+      { $sort: { joinedAt: -1 } },
+    ]);
+  }
 }

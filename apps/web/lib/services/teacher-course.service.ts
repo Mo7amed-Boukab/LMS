@@ -149,8 +149,9 @@ export const teacherCourseService = {
     const formData = new FormData();
     formData.append("file", file);
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/uploads/${type}`,
+      `${apiUrl}/uploads/${type}`,
       {
         method: "POST",
         body: formData,

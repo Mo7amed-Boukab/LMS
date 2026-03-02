@@ -8,6 +8,7 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
+  "globalSetup": "<rootDir>/jest-e2e-globalSetup.ts",
   "setupFiles": ["<rootDir>/jest-e2e.setup.ts"],
   "testEnvironment": "node"
 }

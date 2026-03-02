@@ -86,13 +86,13 @@ export default function CourseCard({
   }
  
   return (
-    <div className="group bg-white rounded-md border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+    <div className="group bg-white rounded-sm border border-gray-200 overflow-hidden transition-all duration-300 flex flex-col">
       <Link href={href} className="relative aspect-video overflow-hidden block">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
           style={{ backgroundImage: `url('${imageUrl}')` }}
         ></div>
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-[#1a1a1a] shadow-sm">
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-sm text-xs font-bold text-[#1a1a1a]">
           {category}
         </div>
       </Link>
@@ -115,7 +115,7 @@ export default function CourseCard({
         <div className="mt-auto pt-4 border-t border-gray-100">
           {showContinueLearning ? (
             <Link href={href} className="block">
-              <button className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2.5 rounded transition-all active:scale-[0.98] shadow-sm text-sm">
+              <button className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2.5 rounded-sm transition-all active:scale-[0.98] text-sm">
                 Continue Learning
               </button>
             </Link>

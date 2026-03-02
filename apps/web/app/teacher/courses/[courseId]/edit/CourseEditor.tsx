@@ -3,6 +3,7 @@
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ConfirmModal from "@/components/modals/ConfirmModal";
 import { useCourseEditor } from "@/context/Course-editor-context";
+import { getMediaUrl } from "@/lib/media";
 import { teacherCourseService } from "@/lib/services/teacher-course.service";
 import {
     ArrowLeft,
@@ -257,15 +258,7 @@ export default function CourseEditor() {
     }
   };
 
-  const getMediaUrl = (url?: string) => {
-    if (!url) return "";
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    if (url.startsWith("http://localhost:3000/")) {
-      return url.replace("http://localhost:3000", apiUrl);
-    }
-    if (url.startsWith("http")) return url;
-    return `${apiUrl}/${url.startsWith("/") ? url.slice(1) : url}`;
-  };
+
 
   const confirmDeleteModule = async () => {
     if (!deleteModuleModal.moduleId) return;

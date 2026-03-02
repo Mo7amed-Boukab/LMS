@@ -2,6 +2,7 @@
 
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import { apiClient } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import QuizClient from "./QuizClient";
@@ -28,30 +29,13 @@ export default function QuizPage({
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:4000/quiz-attempts/quiz/${resolvedParams.quizId}/start`,
-          {
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+        const data = await apiClient.get<QuizData>(
+          `/quiz-attempts/quiz/${resolvedParams.quizId}/start`
         );
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            router.push("/login");
-            return;
-          }
-          setError(data.message || "Unable to load this quiz.");
-        } else {
-          setQuiz(data);
-        }
-      } catch (err) {
+        setQuiz(data);
+      } catch (err: any) {
         console.error("Error fetching quiz:", err);
-        setError("Failed to connect to the server.");
+        setError(err.message || "Failed to connect to the server.");
       } finally {
         setLoading(false);
       }

@@ -71,7 +71,7 @@ export default function LoginPage() {
             <div className="bg-red-700 p-2 rounded-md">
               <GraduationCap className="text-white" size={24} />
             </div>
-            <span className="text-xl font-bold tracking-tight">ED Academy</span>
+            <span className="text-xl font-bold tracking-tight">Bright Academy</span>
           </Link>
         </div>
 

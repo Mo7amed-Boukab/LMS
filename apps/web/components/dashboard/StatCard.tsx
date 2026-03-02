@@ -1,4 +1,3 @@
-import { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
   title: string;
@@ -14,7 +13,7 @@ export default function StatCard({
   trendUp,
 }: StatCardProps) {
   return (
-    <div className="bg-white p-5 rounded-md border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden">
+    <div className="bg-white p-5 rounded-sm border border-gray-100 relative overflow-hidden">
       {/* Decorative Background Circle */}
       <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full bg-rose-50/50"></div>
 

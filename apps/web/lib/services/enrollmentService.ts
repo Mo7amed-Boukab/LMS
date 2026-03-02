@@ -21,4 +21,8 @@ export const enrollmentApi = {
   getMyCourses: async (): Promise<Enrollment[]> => {
     return apiClient.get<Enrollment[]>('/enrollments/my-courses');
   },
+
+  getInstructorStudents: async (): Promise<any[]> => {
+    return apiClient.get<any[]>('/enrollments/instructor-students');
+  },
 };

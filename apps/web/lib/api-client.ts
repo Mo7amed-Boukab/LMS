@@ -1,8 +1,10 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
+let refreshTokenPromise: Promise<Response> | null = null;
+
 export const apiClient = {
   async request<T>(endpoint: string, options?: RequestInit, isRetry = false): Promise<T> {
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    let response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       credentials: "include", // Ensure cookies are sent
       headers: {
@@ -11,20 +13,41 @@ export const apiClient = {
       },
     });
 
-    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh')) {
+    if (response.status === 401 && !isRetry && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/register')) {
       try {
-        // Attempt to refresh tokens
-        const refreshRes = await fetch(`${API_URL}/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include'
-        });
+        if (!refreshTokenPromise) {
+          refreshTokenPromise = fetch(`${API_URL}/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include'
+          }).finally(() => {
+            refreshTokenPromise = null;
+          });
+        }
+        
+        const refreshRes = await refreshTokenPromise;
 
         if (refreshRes.ok) {
           // Retry original request
           return this.request<T>(endpoint, options, true);
+        } else {
+          // If refresh fails, clear session and redirect to login ONLY if they had a session
+          if (typeof window !== 'undefined') {
+             const hadSession = document.cookie.includes('_auth_role=');
+             document.cookie = '_auth_role=; path=/; Max-Age=0';
+             if (hadSession && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                 window.location.href = '/login';
+             }
+          }
         }
       } catch (error) {
         console.error("Auto-refresh failed", error);
+        if (typeof window !== 'undefined') {
+             const hadSession = document.cookie.includes('_auth_role=');
+             document.cookie = '_auth_role=; path=/; Max-Age=0';
+             if (hadSession && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                 window.location.href = '/login';
+             }
+        }
       }
     }
 

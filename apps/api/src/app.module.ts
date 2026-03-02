@@ -18,11 +18,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
-    // Rate Limiting: 10 requests per 60 seconds by default
+    // Rate Limiting: 100 requests per 60 seconds by default
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 10,
+        limit: 100,
       },
     ]),
 

@@ -43,7 +43,7 @@ export default function ConfirmDeleteModal({
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white rounded-sm border border-gray-100 max-w-md w-full animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
@@ -65,14 +65,14 @@ export default function ConfirmDeleteModal({
           <button
             onClick={onClose}
             disabled={isDeleting}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-sm transition-colors disabled:opacity-50 flex items-center gap-2"
           >
             {isDeleting ? (
               <>

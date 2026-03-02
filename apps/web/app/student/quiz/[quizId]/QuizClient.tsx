@@ -1,15 +1,16 @@
 "use client";
 
 import ConfirmModal from "@/components/modals/ConfirmModal";
+import { apiClient } from "@/lib/api-client";
 import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  FileText,
-  Info,
-  List,
-  Timer
+    ArrowLeft,
+    ArrowRight,
+    CheckCircle2,
+    Clock,
+    FileText,
+    Info,
+    List,
+    Timer
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -94,9 +95,6 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
 
   const confirmSubmit = async (autoSubmit = false) => {
     setIsSubmitting(true);
-    // If not auto submit, close modal on successful submit or just keep it showing loading?
-    // ConfirmModal handles loading state if we pass isLoading
-    
     const toastId = toast.loading("Submitting quiz...");
 
     try {
@@ -104,31 +102,10 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
         ([questionId, selectedOptionId]) => ({ questionId, selectedOptionId })
       );
 
-      const res = await fetch(
-        `http://localhost:4000/quiz-attempts/quiz/${quizId}/submit`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ answers: formattedAnswers }),
-        }
+      const result = await apiClient.post<any>(
+        `/quiz-attempts/quiz/${quizId}/submit`,
+        { answers: formattedAnswers }
       );
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 401) {
-            toast.error("Session expired. Please login again.", { id: toastId });
-            router.push('/login');
-            return;
-        }
-        toast.error(result.message || "Error submitting quiz", { id: toastId });
-        setIsSubmitting(false);
-        setShowSubmitModal(false);
-        return;
-      }
 
       // Cleanup local storage
       localStorage.removeItem(`quiz-${quizId}-answers`);
@@ -137,8 +114,9 @@ export default function QuizClient({ quiz, quizId }: QuizClientProps) {
       toast.success("Quiz submitted successfully!", { id: toastId });
       setShowSubmitModal(false);
       router.push(`/student/quiz/${quizId}/results/${result.attemptId}`);
-    } catch (error) {
-      toast.error("Failed to submit quiz. Please try again.", { id: toastId });
+    } catch (error: any) {
+      console.error("Submission failed:", error);
+      toast.error(error.message || "Failed to submit quiz. Please try again.", { id: toastId });
       setIsSubmitting(false);
       setShowSubmitModal(false);
     }

@@ -2,30 +2,30 @@
 
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
+import { getMediaUrl } from "@/lib/media";
 import { teacherCourseService, type Course, type CourseLesson, type CourseModule } from "@/lib/services/teacher-course.service";
 import {
-  ArrowLeft,
-  BarChart,
-  BookOpen,
-  CheckCircle,
-  ChevronDown,
-  Clock,
-  Download,
-  Edit,
-  FileText,
-  Globe,
-  Infinity,
-  Loader2,
-  Lock,
-  Monitor,
-  Play,
-  PlayCircle,
-  RefreshCw,
-  Smartphone,
-  Star,
-  Trash2,
-  Users,
-  Video
+    ArrowLeft,
+    BarChart,
+    BookOpen,
+    ChevronDown,
+    Clock,
+    Download,
+    Edit,
+    FileText,
+    Globe,
+    Infinity,
+    Loader2,
+    Lock,
+    Monitor,
+    Play,
+    PlayCircle,
+    RefreshCw,
+    Smartphone,
+    Star,
+    Trash2,
+    Users,
+    Video
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -103,17 +103,7 @@ export default function CourseDetailsPage({
     );
   }
 
-  const getMediaUrl = (url?: string) => {
-    if (!url) return null;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    
-    if (url.includes("localhost:3000/uploads")) {
-        return url.replace("localhost:3000", "localhost:4000");
-    }
 
-    if (url.startsWith("http")) return url;
-    return `${apiUrl}/${url.startsWith("/") ? url.slice(1) : url}`;
-  };
 
   const thumbnailUrl = getMediaUrl(course.thumbnail);
   // Calculate stats from modules

@@ -24,8 +24,8 @@ describe('Auth + Permissions (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoServer.stop();
+    if (app) await app.close();
+    if (mongoServer) await mongoServer.stop();
   });
 
   it('register + login sets cookies and allows access to /auth/profile', async () => {

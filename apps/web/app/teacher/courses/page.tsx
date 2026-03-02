@@ -2,20 +2,21 @@
 
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
+import { getMediaUrl } from "@/lib/media";
 import {
-  teacherCourseService,
-  type Course,
+    teacherCourseService,
+    type Course,
 } from "@/lib/services/teacher-course.service";
 import {
-  Check,
-  ChevronDown,
-  Edit,
-  Eye,
-  Loader2,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
+    Check,
+    ChevronDown,
+    Edit,
+    Eye,
+    Loader2,
+    MoreVertical,
+    Plus,
+    Search,
+    Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -76,7 +77,7 @@ function CustomDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded shadow-lg z-50 py-1 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-sm z-50 py-1 max-h-60 overflow-y-auto">
           {options.map((option) => (
             <button
               key={option}
@@ -138,7 +139,7 @@ function ActionMenu({ courseId }: { courseId: string }) {
       <button
         ref={buttonRef}
         onClick={handleToggle}
-        className="text-gray-400 hover:text-gray-600 p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+        className="text-gray-400 hover:text-gray-600 p-1.5 rounded hover:bg-gray-100 transition-colors"
       >
         <MoreVertical size={16} />
       </button>
@@ -158,14 +159,14 @@ function ActionMenu({ courseId }: { courseId: string }) {
               top: `${menuPosition.top}px`,
               right: `${menuPosition.right}px`,
             }}
-            className="w-40 bg-white border border-gray-100 rounded-md shadow-lg z-50 py-1.5 px-1"
+            className="w-40 bg-white border border-gray-200 rounded-sm z-50 py-1.5 px-1 font-medium text-xs"
           >
             <button
               onClick={() => {
                 router.push(`/teacher/courses/${courseId}`);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md flex items-center gap-3 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded flex items-center gap-3 transition-colors"
             >
               <Eye size={16} /> View
             </button>
@@ -174,7 +175,7 @@ function ActionMenu({ courseId }: { courseId: string }) {
                 router.push(`/teacher/courses/${courseId}/edit`);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md flex items-center gap-3 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded flex items-center gap-3 transition-colors"
             >
               <Edit size={16} /> Edit
             </button>
@@ -187,7 +188,7 @@ function ActionMenu({ courseId }: { courseId: string }) {
                 window.dispatchEvent(deleteEvent);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded-md flex items-center gap-3 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 rounded flex items-center gap-3 transition-colors"
             >
               <Trash2 size={16} /> Delete
             </button>
@@ -288,18 +289,7 @@ export default function CoursesPage() {
     }
   };
 
-  // Helper for thumbnail URL
-  const getThumbnailUrl = (thumbnail?: string) => {
-    if (!thumbnail) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100&auto=format&fit=crop&q=60";
-    
-    if (thumbnail.includes("localhost:3000/uploads")) {
-        return thumbnail.replace("localhost:3000", "localhost:4000");
-    }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    if (thumbnail.startsWith("http")) return thumbnail;
-    return `${apiUrl}/${thumbnail.startsWith("/") ? thumbnail.slice(1) : thumbnail}`;
-  };
 
   return (
     <>
@@ -347,7 +337,7 @@ export default function CoursesPage() {
           {/* Create Button */}
           <Link href="/teacher/courses/create">
             {" "}
-            <button className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-sm font-medium text-sm transition-colors shadow-sm w-full md:w-auto justify-center">
+            <button className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded font-medium text-sm transition-colors shadow-sm w-full md:w-auto justify-center">
               <Plus size={16} />
               <span>Create Course</span>
             </button>
@@ -355,7 +345,7 @@ export default function CoursesPage() {
         </div>
 
         {/* Table View */}
-        <div className="bg-white rounded-md border border-gray-100 min-h-[400px]">
+        <div className="bg-white rounded border border-gray-100 min-h-[400px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 size={32} className="animate-spin text-red-600" />
@@ -401,9 +391,9 @@ export default function CoursesPage() {
                           <td className="py-4 px-5">
                             <div className="flex items-center gap-3">
                                 <div
-                                className="h-10 w-10 rounded-md bg-gray-100 bg-cover bg-center shrink-0"
+                                className="h-10 w-10 rounded bg-gray-100 bg-cover bg-center shrink-0"
                                 style={{
-                                  backgroundImage: `url('${getThumbnailUrl(course.thumbnail)}')`,
+                                  backgroundImage: `url('${getMediaUrl(course.thumbnail)}')`,
                                 }}
                               ></div>
                               <div>
