@@ -2,27 +2,27 @@
 
 import { useAuth } from "@/context/auth-context";
 import {
-  AlertCircle,
-  Award,
-  BarChart,
-  BookOpen,
-  CheckCircle,
-  ChevronDown,
-  Clock,
-  Download,
-  FileText,
-  Gift,
-  Globe,
-  Infinity,
-  Lock,
-  Monitor,
-  Play,
-  PlayCircle,
-  RefreshCw,
-  Share2,
-  Star,
-  Users,
-  Video,
+    AlertCircle,
+    Award,
+    BarChart,
+    BookOpen,
+    CheckCircle,
+    ChevronDown,
+    Clock,
+    Download,
+    FileText,
+    Gift,
+    Globe,
+    Infinity,
+    Lock,
+    Monitor,
+    Play,
+    PlayCircle,
+    RefreshCw,
+    Share2,
+    Star,
+    Users,
+    Video,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -39,7 +39,7 @@ export default function CourseDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
 
 
@@ -99,6 +99,11 @@ export default function CourseDetailsPage() {
     if (!isAuthenticated) {
         toast.error("You must be logged in to enroll");
         router.push(`/login?redirect=/courses/${slug}`);
+        return;
+    }
+
+    if (user?.role && user.role !== 'apprenant') {
+        toast.error("Only students can enroll in courses.");
         return;
     }
 
@@ -753,10 +758,10 @@ export default function CourseDetailsPage() {
                     ) : (
                         <button 
                             onClick={handleEnroll}
-                            disabled={enrollmentLoading}
+                            disabled={enrollmentLoading || (isAuthenticated && user?.role !== 'apprenant')}
                             className="w-full py-3 px-4 bg-red-700 hover:bg-red-800 text-white rounded font-bold text-sm shadow-[0_0_15px_rgba(203,16,48,0.15)] transition-all active:scale-[0.98] mb-3 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {enrollmentLoading ? "Enrolling..." : "Enroll Now"}
+                            {enrollmentLoading ? "Enrolling..." : (isAuthenticated && user?.role !== 'apprenant' ? "Only students can enroll" : "Enroll Now")}
                         </button>
                     )}
                     <div className="text-center text-xs text-[#896168] mb-6">
