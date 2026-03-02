@@ -1,12 +1,12 @@
 "use client";
 
 import {
-    Check,
-    ChevronDown,
-    ChevronLeft,
-    ChevronRight,
-    Search,
-    X,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  X,
 } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import CourseCard from "../../components/home/CourseCard";
@@ -88,7 +88,7 @@ function CustomDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-lg shadow-lg z-50 py-1 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-sm z-50 py-1 max-h-60 overflow-y-auto">
           {options.map((option) => {
             const isSelected = selected.includes(option);
             return (

@@ -1,26 +1,27 @@
 "use client";
 
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { getMediaUrl } from "@/lib/media";
 import { teacherCourseService } from "@/lib/services/teacher-course.service";
 import {
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  Edit,
-  Eye,
-  FileText,
-  GripVertical,
-  Image as ImageIcon,
-  Layout,
-  List,
-  Loader2,
-  Plus,
-  Save,
-  Settings,
-  Trash2,
-  UploadCloud,
-  Video,
-  X
+    ArrowLeft,
+    Check,
+    ChevronDown,
+    Edit,
+    Eye,
+    FileText,
+    GripVertical,
+    Image as ImageIcon,
+    Layout,
+    List,
+    Loader2,
+    Plus,
+    Save,
+    Settings,
+    Trash2,
+    UploadCloud,
+    Video,
+    X
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -142,19 +143,7 @@ export default function CreateCoursePage() {
 
   const [sections, setSections] = useState<LocalSection[]>([]);
 
-  // Helper to fix backend URLs if they have the wrong port
-  const getMediaUrl = (url?: string) => {
-    if (!url) return "";
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    // If URL is absolute but points to port 3000 (backend default), swap it to correct API URL
-    if (url.startsWith("http://localhost:3000/")) {
-      return url.replace("http://localhost:3000", apiUrl);
-    }
-    // If it's already absolute or a full URL, return as is
-    if (url.startsWith("http")) return url;
-    // Otherwise assume it's relative to API
-    return `${apiUrl}/${url.startsWith("/") ? url.slice(1) : url}`;
-  };
+
 
   const handleSave = async (asDraft = true) => {
     if (!title) {

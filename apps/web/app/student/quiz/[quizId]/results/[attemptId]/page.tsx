@@ -2,6 +2,7 @@
 
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import { apiClient } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import ResultClient from "./ResultClient";
@@ -12,25 +13,6 @@ interface ResultsData {
   score: number;
   totalQuestions: number;
   [key: string]: any;
-}
-
-async function getResults(attemptId: string, token: string) {
-  try {
-    const res = await fetch(
-      `http://localhost:4000/quiz-attempts/${attemptId}/results`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      }
-    );
-
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    return null;
-  }
 }
 
 export default function ResultsPage({
@@ -46,25 +28,11 @@ export default function ResultsPage({
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:4000/quiz-attempts/${resolvedParams.attemptId}/results`,
-          {
-            credentials: "include",
-            cache: "no-store",
-          }
+        const data = await apiClient.get<ResultsData>(
+          `/quiz-attempts/${resolvedParams.attemptId}/results`
         );
-
-        if (!res.ok) {
-           if (res.status === 401) {
-             router.push('/login');
-             return;
-           }
-           setResults(null);
-        } else {
-           const data = await res.json();
-           setResults(data);
-        }
-      } catch (err) {
+        setResults(data);
+      } catch (err: any) {
         console.error("Failed to fetch results:", err);
         setResults(null);
       } finally {

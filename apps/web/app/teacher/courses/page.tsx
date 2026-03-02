@@ -2,20 +2,21 @@
 
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ConfirmDeleteModal from "@/components/modals/ConfirmDeleteModal";
+import { getMediaUrl } from "@/lib/media";
 import {
-  teacherCourseService,
-  type Course,
+    teacherCourseService,
+    type Course,
 } from "@/lib/services/teacher-course.service";
 import {
-  Check,
-  ChevronDown,
-  Edit,
-  Eye,
-  Loader2,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
+    Check,
+    ChevronDown,
+    Edit,
+    Eye,
+    Loader2,
+    MoreVertical,
+    Plus,
+    Search,
+    Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -76,7 +77,7 @@ function CustomDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded shadow-lg z-50 py-1 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-sm z-50 py-1 max-h-60 overflow-y-auto">
           {options.map((option) => (
             <button
               key={option}
@@ -158,7 +159,7 @@ function ActionMenu({ courseId }: { courseId: string }) {
               top: `${menuPosition.top}px`,
               right: `${menuPosition.right}px`,
             }}
-            className="w-40 bg-white border border-gray-100 rounded shadow-lg z-50 py-1.5 px-1"
+            className="w-40 bg-white border border-gray-200 rounded-sm z-50 py-1.5 px-1 font-medium text-xs"
           >
             <button
               onClick={() => {
@@ -288,18 +289,7 @@ export default function CoursesPage() {
     }
   };
 
-  // Helper for thumbnail URL
-  const getThumbnailUrl = (thumbnail?: string) => {
-    if (!thumbnail) return "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=100&auto=format&fit=crop&q=60";
-    
-    if (thumbnail.includes("localhost:3000/uploads")) {
-        return thumbnail.replace("localhost:3000", "localhost:4000");
-    }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    if (thumbnail.startsWith("http")) return thumbnail;
-    return `${apiUrl}/${thumbnail.startsWith("/") ? thumbnail.slice(1) : thumbnail}`;
-  };
 
   return (
     <>
@@ -403,7 +393,7 @@ export default function CoursesPage() {
                                 <div
                                 className="h-10 w-10 rounded bg-gray-100 bg-cover bg-center shrink-0"
                                 style={{
-                                  backgroundImage: `url('${getThumbnailUrl(course.thumbnail)}')`,
+                                  backgroundImage: `url('${getMediaUrl(course.thumbnail)}')`,
                                 }}
                               ></div>
                               <div>

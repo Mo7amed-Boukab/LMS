@@ -65,7 +65,7 @@ export default function MyEnrollmentsPage() {
   }
  
   return (
-    <div className="min-h-screen bg-[#fcf8f9] flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Header />
  
       <main className="flex-grow max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
@@ -82,7 +82,7 @@ export default function MyEnrollmentsPage() {
         </div>
  
         {enrollments.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-100 p-12 text-center shadow-sm">
+          <div className="bg-white rounded-sm border border-gray-100 p-12 text-center">
             <div className="inline-flex items-center justify-center size-20 rounded-full bg-red-50 text-red-700 mb-6">
               <Book size={32} />
             </div>
@@ -91,14 +91,16 @@ export default function MyEnrollmentsPage() {
               Looks like you haven't started any courses yet. Start your journey today!
             </p>
             <Link href="/courses">
-              <button className="bg-red-700 text-white px-8 py-3 rounded font-bold hover:bg-red-800 transition-colors shadow-lg shadow-red-700/20">
+              <button className="bg-red-700 text-white px-8 py-3 rounded-sm font-bold hover:bg-red-800 transition-colors">
                 Explore Catalog
               </button>
             </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {enrollments.map((enrollment) => (
+            {enrollments
+              .filter(enrollment => enrollment.courseId)
+              .map((enrollment) => (
               <CourseCard
                 key={enrollment._id}
                 category={enrollment.courseId.category}
