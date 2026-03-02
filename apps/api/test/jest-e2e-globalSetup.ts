@@ -11,11 +11,16 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
  */
 export default async function globalSetup() {
   // Use locally installed mongod if available (skip 600MB download)
-  process.env.MONGOMS_SYSTEM_BINARY =
-    process.env.MONGOMS_SYSTEM_BINARY || findSystemMongod();
+  // Only set MONGOMS_SYSTEM_BINARY if we actually find a system mongod
+  if (!process.env.MONGOMS_SYSTEM_BINARY) {
+    const systemMongod = findSystemMongod();
+    if (systemMongod) {
+      process.env.MONGOMS_SYSTEM_BINARY = systemMongod;
+    }
+  }
 
   console.log(
-    `\n[globalSetup] Using mongod: ${process.env.MONGOMS_SYSTEM_BINARY || 'download'}`,
+    `\n[globalSetup] Using mongod: ${process.env.MONGOMS_SYSTEM_BINARY || 'downloading MongoMemoryServer binary'}`,
   );
 
   const server = await MongoMemoryServer.create();
